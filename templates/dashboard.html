@@ -1,0 +1,3065 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - MindSpace{% endblock %}
+
+{% block styles %}
+<style>
+:root {
+    --primary-color: #667eea;
+    --primary-dark: #764ba2;
+    --secondary-color: #5b9bd5;
+    --accent-color: #ff6b6b;
+    --success-color: #51cf66;
+    --warning-color: #ffd43b;
+    --text-dark: #2c3e50;
+    --text-light: #6c757d;
+    --bg-light: #f8f9fa;
+    --white: #ffffff;
+    --shadow: 0 2px 10px rgba(0,0,0,0.1);
+    --shadow-hover: 0 5px 20px rgba(0,0,0,0.15);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+    overflow-x: hidden;
+}
+
+.dashboard-wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Mobile Menu Toggle */
+.menu-toggle {
+    display: none;
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 2000;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: var(--white);
+    border: none;
+    width: 45px;
+    height: 45px;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.menu-toggle:hover {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-hover);
+}
+
+.menu-toggle i {
+    font-size: 20px;
+}
+
+/* Sidebar Overlay */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 999;
+    backdrop-filter: blur(2px);
+}
+
+.sidebar-overlay.active {
+    display: block;
+}
+
+/* Sidebar Styles */
+.sidebar {
+    width: 260px;
+    background: linear-gradient(180deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    color: var(--white);
+    position: fixed;
+    height: 100vh;
+    overflow-y: auto;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    z-index: 1000;
+    transition: transform 0.3s ease;
+}
+
+.sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.1);
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.3);
+    border-radius: 3px;
+}
+
+.sidebar.mobile-hidden {
+    transform: translateX(-100%);
+}
+
+.sidebar-logo {
+    padding: 30px 20px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.sidebar-logo i {
+    font-size: 48px;
+    margin-bottom: 10px;
+    color: #ffd43b;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.sidebar-logo h2 {
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+.nav-menu {
+    padding: 20px 0;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    padding: 15px 25px;
+    color: rgba(255,255,255,0.8);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border-left: 3px solid transparent;
+    position: relative;
+}
+
+.nav-item:hover {
+    background: rgba(255,255,255,0.1);
+    color: var(--white);
+    border-left-color: var(--warning-color);
+}
+
+.nav-item.active {
+    background: rgba(255,255,255,0.15);
+    color: var(--white);
+    border-left-color: var(--warning-color);
+    font-weight: 600;
+}
+
+.nav-item i {
+    width: 24px;
+    margin-right: 12px;
+    font-size: 18px;
+}
+
+.logout-item {
+    margin-top: 20px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding-top: 20px;
+}
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    margin-left: 260px;
+    background-color: var(--bg-light);
+    transition: margin-left 0.3s ease;
+}
+
+/* Top Header */
+.top-header {
+    background: var(--white);
+    padding: 20px 40px;
+    box-shadow: var(--shadow);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.welcome-section h1 {
+    font-size: 28px;
+    color: var(--text-dark);
+    margin-bottom: 5px;
+}
+
+.welcome-section p {
+    color: var(--text-light);
+    font-size: 14px;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.notification-bell {
+    position: relative;
+    cursor: pointer;
+    font-size: 22px;
+    color: var(--text-dark);
+    transition: all 0.3s ease;
+}
+
+.notification-bell:hover {
+    color: var(--primary-color);
+    transform: scale(1.1);
+}
+
+.notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: var(--accent-color);
+    color: var(--white);
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 10px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    animation: bounce 1s infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-details {
+    text-align: right;
+}
+
+.user-details strong {
+    display: block;
+    font-size: 15px;
+    color: var(--text-dark);
+}
+
+.user-details small {
+    font-size: 12px;
+    color: var(--text-light);
+}
+
+.user-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--white);
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+/* Content Sections */
+.content-section {
+    display: none;
+    padding: 40px;
+    animation: fadeIn 0.5s ease;
+}
+
+.content-section.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Breathing Exercise Card */
+.breathing-card {
+    background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%);
+    padding: 40px;
+    border-radius: 16px;
+    box-shadow: var(--shadow-hover);
+    margin-bottom: 30px;
+    color: var(--white);
+    text-align: center;
+    animation: slideIn 0.6s ease;
+}
+
+.breathing-circle {
+    width: 200px;
+    height: 200px;
+    margin: 30px auto;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 600;
+    backdrop-filter: blur(10px);
+    border: 3px solid rgba(255,255,255,0.3);
+    transition: all 4s ease-in-out;
+}
+
+.breathing-circle.inhale {
+    transform: scale(1.3);
+    background: rgba(255,255,255,0.3);
+}
+
+.breathing-circle.exhale {
+    transform: scale(1);
+    background: rgba(255,255,255,0.2);
+}
+
+.breathing-controls {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 25px;
+}
+
+.btn-breathing {
+    padding: 12px 30px;
+    border: 2px solid rgba(255,255,255,0.5);
+    background: rgba(255,255,255,0.2);
+    color: var(--white);
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.btn-breathing:hover {
+    background: rgba(255,255,255,0.3);
+    transform: translateY(-2px);
+}
+
+/* Gratitude Journal Card */
+.gratitude-card {
+    background: linear-gradient(135deg, #ff9068 0%, #fd746c 100%);
+    padding: 35px;
+    border-radius: 16px;
+    box-shadow: var(--shadow-hover);
+    margin-bottom: 30px;
+    color: var(--white);
+    animation: slideIn 0.6s ease 0.1s both;
+}
+
+.gratitude-card h3 {
+    font-size: 24px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.gratitude-input {
+    width: 100%;
+    padding: 15px;
+    border: 2px solid rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.15);
+    color: var(--white);
+    border-radius: 10px;
+    font-size: 16px;
+    margin: 15px 0;
+    resize: vertical;
+    min-height: 100px;
+    backdrop-filter: blur(10px);
+}
+
+.gratitude-input::placeholder {
+    color: rgba(255,255,255,0.7);
+}
+
+.gratitude-list {
+    margin-top: 20px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.gratitude-item {
+    background: rgba(255,255,255,0.15);
+    padding: 12px 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    backdrop-filter: blur(10px);
+}
+
+.gratitude-item i {
+    font-size: 20px;
+}
+
+/* Affirmations Card */
+.affirmations-card {
+    background: linear-gradient(135deg, #51cf66 0%, #37b24d 100%);
+    padding: 35px;
+    border-radius: 16px;
+    box-shadow: var(--shadow-hover);
+    margin-bottom: 30px;
+    color: var(--white);
+    text-align: center;
+    animation: slideIn 0.6s ease 0.2s both;
+}
+
+.affirmation-text {
+    font-size: 26px;
+    font-weight: 600;
+    margin: 25px 0;
+    line-height: 1.5;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Progress Tracker */
+.progress-tracker {
+    background: var(--white);
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    margin-bottom: 30px;
+}
+
+.progress-tracker h3 {
+    margin-bottom: 25px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-dark);
+}
+
+.progress-item {
+    margin-bottom: 20px;
+}
+
+.progress-label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    color: var(--text-dark);
+    font-weight: 500;
+}
+
+.progress-bar-container {
+    width: 100%;
+    height: 12px;
+    background: var(--bg-light);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), var(--primary-dark));
+    border-radius: 10px;
+    transition: width 1s ease;
+}
+
+/* Mood Tracker Card */
+.mood-tracker-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: var(--shadow-hover);
+    margin-bottom: 30px;
+    color: var(--white);
+    animation: slideIn 0.6s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.mood-tracker-card h3 {
+    font-size: 24px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.mood-tracker-card p {
+    font-size: 15px;
+    margin-bottom: 25px;
+    opacity: 0.95;
+}
+
+.mood-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 15px;
+}
+
+.mood-option {
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(10px);
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.mood-option:hover {
+    background: rgba(255,255,255,0.25);
+    transform: translateY(-5px);
+    border-color: var(--warning-color);
+}
+
+.mood-option.selected {
+    background: rgba(255,255,255,0.3);
+    border-color: var(--warning-color);
+    box-shadow: 0 5px 20px rgba(255,212,59,0.3);
+}
+
+.mood-emoji {
+    font-size: 48px;
+    display: block;
+    margin-bottom: 8px;
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+.mood-option:nth-child(2) .mood-emoji { animation-delay: 0.2s; }
+.mood-option:nth-child(3) .mood-emoji { animation-delay: 0.4s; }
+.mood-option:nth-child(4) .mood-emoji { animation-delay: 0.6s; }
+.mood-option:nth-child(5) .mood-emoji { animation-delay: 0.8s; }
+.mood-option:nth-child(6) .mood-emoji { animation-delay: 1s; }
+
+.mood-label {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* Mood History Chart */
+.mood-history {
+    background: var(--white);
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    margin-bottom: 30px;
+}
+
+.mood-history h3 {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-dark);
+}
+
+.mood-chart {
+    width: 100%;
+    height: 250px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    gap: 10px;
+    padding: 20px 0;
+}
+
+.mood-bar {
+    flex: 1;
+    background: linear-gradient(180deg, var(--primary-color), var(--primary-dark));
+    border-radius: 8px 8px 0 0;
+    min-height: 20px;
+    transition: all 0.3s ease;
+    position: relative;
+    cursor: pointer;
+}
+
+.mood-bar:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+.mood-bar-label {
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-light);
+    margin-top: 8px;
+}
+
+/* Inspirational Quote Card */
+.quote-card {
+    background: linear-gradient(135deg, #ff9068 0%, #fd746c 100%);
+    padding: 35px;
+    border-radius: 16px;
+    box-shadow: var(--shadow-hover);
+    margin-bottom: 30px;
+    color: var(--white);
+    position: relative;
+    overflow: hidden;
+    animation: slideIn 0.6s ease 0.2s both;
+}
+
+.quote-card::before {
+    content: '"';
+    position: absolute;
+    top: -20px;
+    left: 20px;
+    font-size: 150px;
+    opacity: 0.1;
+    font-family: Georgia, serif;
+}
+
+.quote-content {
+    position: relative;
+    z-index: 1;
+}
+
+.quote-text {
+    font-size: 20px;
+    line-height: 1.6;
+    margin-bottom: 15px;
+    font-style: italic;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.quote-author {
+    font-size: 16px;
+    font-weight: 600;
+    text-align: right;
+    opacity: 0.9;
+}
+
+.quote-refresh {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: var(--white);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.quote-refresh:hover {
+    background: rgba(255,255,255,0.3);
+    transform: rotate(180deg);
+}
+
+/* Joke Card */
+.joke-card {
+    background: linear-gradient(135deg, #51cf66 0%, #37b24d 100%);
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: var(--shadow-hover);
+    margin-bottom: 30px;
+    color: var(--white);
+    animation: slideIn 0.6s ease 0.4s both;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.joke-card:hover {
+    transform: scale(1.02);
+}
+
+.joke-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 15px;
+    font-size: 22px;
+    font-weight: 600;
+}
+
+.joke-text {
+    font-size: 17px;
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
+
+.joke-punchline {
+    font-size: 17px;
+    line-height: 1.6;
+    font-weight: 600;
+    padding: 15px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 8px;
+    margin-top: 10px;
+    backdrop-filter: blur(10px);
+}
+
+.joke-hint {
+    font-size: 13px;
+    opacity: 0.8;
+    text-align: center;
+    margin-top: 10px;
+}
+
+/* Victory Log */
+.victory-log {
+    background: var(--white);
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    margin-bottom: 30px;
+}
+
+.victory-log h3 {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-dark);
+}
+
+.victory-input-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.victory-input {
+    flex: 1;
+    padding: 12px 15px;
+    border: 2px solid var(--bg-light);
+    border-radius: 10px;
+    font-size: 15px;
+}
+
+.victory-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.btn-add-victory {
+    padding: 12px 24px;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: var(--white);
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-add-victory:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+.victory-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.victory-item {
+    background: var(--bg-light);
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: slideIn 0.3s ease;
+}
+
+.victory-item i {
+    color: var(--success-color);
+    font-size: 20px;
+}
+
+/* Quick Stats */
+.quick-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 25px;
+    margin-bottom: 40px;
+}
+
+.stat-card {
+    background: var(--white);
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-hover);
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+}
+
+.stat-icon.blue {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: var(--white);
+}
+
+.stat-icon.green {
+    background: linear-gradient(135deg, #51cf66 0%, #37b24d 100%);
+    color: var(--white);
+}
+
+.stat-icon.orange {
+    background: linear-gradient(135deg, #ff9068 0%, #fd746c 100%);
+    color: var(--white);
+}
+
+.stat-icon.purple {
+    background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%);
+    color: var(--white);
+}
+
+.stat-details h3 {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 5px;
+}
+
+.stat-details p {
+    color: var(--text-light);
+    font-size: 14px;
+}
+
+/* Loading State */
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(0,0,0,0.1);
+    border-radius: 50%;
+    border-top-color: var(--primary-color);
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Section Title */
+.section-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 3px solid var(--primary-color);
+    display: inline-block;
+}
+
+/* Info Banner */
+.info-banner {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: var(--white);
+    padding: 20px 25px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: var(--shadow);
+}
+
+.info-banner i {
+    font-size: 28px;
+}
+
+.info-banner-content h3 {
+    font-size: 18px;
+    margin-bottom: 5px;
+}
+
+.info-banner-content p {
+    font-size: 14px;
+    opacity: 0.95;
+}
+
+/* Recent Activity */
+.activity-section {
+    background: var(--white);
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    margin-bottom: 30px;
+}
+
+.activity-section h3 {
+    margin-bottom: 20px;
+    color: var(--text-dark);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.activity-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    border-bottom: 1px solid var(--bg-light);
+    transition: background 0.3s ease;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-item:hover {
+    background: var(--bg-light);
+    border-radius: 8px;
+}
+
+.activity-icon {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    background: var(--bg-light);
+    color: var(--primary-color);
+}
+
+.activity-details {
+    flex: 1;
+}
+
+.activity-details h4 {
+    font-size: 15px;
+    color: var(--text-dark);
+    margin-bottom: 3px;
+}
+
+.activity-details p {
+    font-size: 13px;
+    color: var(--text-light);
+}
+
+.activity-time {
+    font-size: 12px;
+    color: var(--text-light);
+}
+
+/* Features Grid */
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 30px;
+    margin-bottom: 40px;
+}
+
+.feature-card {
+    background: var(--white);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.feature-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-hover);
+}
+
+.feature-header {
+    padding: 30px;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    color: var(--white);
+    text-align: center;
+}
+
+.feature-header i {
+    font-size: 48px;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.feature-header h3 {
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.feature-body {
+    padding: 25px;
+}
+
+.feature-body p {
+    color: var(--text-light);
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.feature-body ul {
+    margin: 15px 0;
+    padding-left: 20px;
+    color: var(--text-light);
+}
+
+.feature-body ul li {
+    margin-bottom: 8px;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    color: var(--white);
+}
+
+.btn-primary:hover {
+    transform: translateX(5px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+/* Message Banner */
+.message-banner {
+    background: linear-gradient(135deg, #51cf66 0%, #37b24d 100%);
+    color: var(--white);
+    padding: 15px 25px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: var(--shadow);
+}
+
+.message-banner.warning {
+    background: linear-gradient(135deg, #ff9068 0%, #fd746c 100%);
+}
+
+.message-banner i {
+    font-size: 24px;
+}
+
+.message-banner span {
+    flex: 1;
+    font-weight: 500;
+}
+
+.message-banner a {
+    color: var(--white);
+    text-decoration: underline;
+    font-weight: 600;
+}
+
+/* Premium Modal */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: var(--white);
+    border-radius: 16px;
+    padding: 40px;
+    max-width: 500px;
+    width: 90%;
+    position: relative;
+    animation: slideDown 0.4s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.close-modal {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 28px;
+    cursor: pointer;
+    color: var(--text-light);
+    transition: color 0.3s ease;
+}
+
+.close-modal:hover {
+    color: var(--text-dark);
+}
+
+.premium-icon {
+    font-size: 64px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.modal-content h2 {
+    text-align: center;
+    color: var(--text-dark);
+    margin-bottom: 15px;
+}
+
+.modal-content p {
+    text-align: center;
+    color: var(--text-light);
+    margin-bottom: 15px;
+    line-height: 1.6;
+}
+
+.payment-details {
+    background: var(--bg-light);
+    padding: 20px;
+    border-radius: 10px;
+    margin: 25px 0;
+}
+
+.payment-details h3 {
+    color: var(--text-dark);
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+.payment-details p {
+    text-align: left;
+    margin-bottom: 10px;
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, #ffd43b 0%, #ffa94d 100%);
+    color: var(--text-dark);
+    width: 100%;
+    justify-content: center;
+}
+
+.btn-warning:hover {
+    transform: scale(1.05);
+}
+
+.support-contact {
+    font-size: 12px;
+    text-align: center;
+    margin-top: 20px;
+    color: var(--text-light);
+}
+
+/* Emergency Support Section */
+.emergency-support {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+    color: var(--white);
+    padding: 30px;
+    border-radius: 12px;
+    text-align: center;
+    margin-bottom: 30px;
+    box-shadow: var(--shadow);
+}
+
+.emergency-support h3 {
+    font-size: 22px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.emergency-support p {
+    font-size: 15px;
+    margin-bottom: 20px;
+    opacity: 0.95;
+}
+
+.emergency-numbers {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.emergency-number {
+    background: rgba(255,255,255,0.2);
+    padding: 15px;
+    border-radius: 8px;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.emergency-number:hover {
+    background: rgba(255,255,255,0.3);
+    transform: translateY(-3px);
+}
+
+.emergency-number strong {
+    display: block;
+    font-size: 16px;
+    margin-bottom: 5px;
+}
+
+.emergency-number a {
+    color: var(--white);
+    text-decoration: none;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 30px;
+    color: var(--text-light);
+}
+
+.empty-state i {
+    font-size: 48px;
+    margin-bottom: 15px;
+    opacity: 0.5;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .menu-toggle {
+        display: flex;
+    }
+    
+    .sidebar {
+        transform: translateX(-100%);
+    }
+    
+    .sidebar.mobile-visible {
+        transform: translateX(0);
+    }
+    
+    .main-content {
+        margin-left: 0;
+    }
+    
+    .top-header {
+        padding: 15px 20px;
+        padding-left: 75px;
+    }
+    
+    .welcome-section h1 {
+        font-size: 20px;
+    }
+    
+    .welcome-section p {
+        font-size: 12px;
+    }
+    
+    .user-details {
+        display: none;
+    }
+    
+    .content-section {
+        padding: 20px;
+    }
+    
+    .features-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .quick-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .emergency-numbers {
+        grid-template-columns: 1fr;
+    }
+    
+    .stat-details h3 {
+        font-size: 28px;
+    }
+    
+    .mood-options {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .quote-text {
+        font-size: 17px;
+    }
+    
+    .breathing-circle {
+        width: 150px;
+        height: 150px;
+        font-size: 18px;
+    }
+    
+    .affirmation-text {
+        font-size: 20px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<button class="menu-toggle" id="menuToggle">
+    <i class="fas fa-bars"></i>
+</button>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="dashboard-wrapper">
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-logo">
+            <i class="fas fa-brain"></i>
+            <h2>MindSpace</h2>
+        </div>
+        
+        <div class="nav-menu">
+            <a href="#" class="nav-item active" data-section="dashboard">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="nav-item" data-section="chatbot">
+                <i class="fas fa-robot"></i>
+                <span>AI Assistant</span>
+            </a>
+            <a href="#" class="nav-item" data-section="games">
+                <i class="fas fa-gamepad"></i>
+                <span>Brain Games</span>
+            </a>
+            <a href="#" class="nav-item" data-section="professionals">
+                <i class="fas fa-user-md"></i>
+                <span>Professionals</span>
+            </a>
+            <a href="#" class="nav-item" data-section="meditation">
+                <i class="fas fa-spa"></i>
+                <span>Meditation</span>
+            </a>
+            <a href="#" class="nav-item" data-section="music">
+                <i class="fas fa-music"></i>
+                <span>Music Therapy</span>
+            </a>
+            <a href="#" class="nav-item" data-section="community">
+                <i class="fas fa-users"></i>
+                <span>Community</span>
+            </a>
+            <a href="#" class="nav-item" data-section="profile">
+                <i class="fas fa-user"></i>
+                <span>My Profile</span>
+            </a>
+            <a href="{{ url_for('logout') }}" class="nav-item logout-item">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <!-- Top Header -->
+        <header class="top-header">
+            <div class="welcome-section">
+                <h1>Welcome back, {{ name }}! 👋</h1>
+                <p id="currentDateTime">Loading...</p>
+            </div>
+            <div class="header-right">
+                <div class="notification-bell" id="notificationBell" title="Notifications">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge" id="notificationCount">0</span>
+                </div>
+                <div class="user-info">
+                    <div class="user-details">
+                        <strong>{{ name }}</strong>
+                        <small>{{ email }}</small>
+                    </div>
+                    <div class="user-avatar">{{ name[0:1].upper() }}</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="content-section active">
+            <!-- Breathing Exercise Card -->
+            <div class="breathing-card">
+                <h3><i class="fas fa-wind"></i> Mindful Breathing Exercise</h3>
+                <p>Take a moment to center yourself with guided breathing. This exercise reduces anxiety and brings calm.</p>
+                <div class="breathing-circle" id="breathingCircle">Breathe</div>
+                <div class="breathing-controls">
+                    <button class="btn-breathing" id="startBreathing">Start Exercise</button>
+                    <button class="btn-breathing" id="stopBreathing" style="display: none;">Stop</button>
+                </div>
+            </div>
+
+            <!-- Daily Affirmations Card -->
+            <div class="affirmations-card">
+                <h3><i class="fas fa-heart"></i> Daily Affirmation</h3>
+                <p>Positive affirmations rewire your brain for success and happiness</p>
+                <div class="affirmation-text" id="affirmationText">Loading your affirmation...</div>
+                <button class="btn-breathing" onclick="refreshAffirmation()">
+                    <i class="fas fa-redo"></i> New Affirmation
+                </button>
+            </div>
+
+            <!-- Gratitude Journal Card -->
+            <div class="gratitude-card">
+                <h3><i class="fas fa-book-heart"></i> Gratitude Journal</h3>
+                <p>Write down three things you're grateful for today. Gratitude shifts your focus to the positive.</p>
+                <textarea class="gratitude-input" id="gratitudeInput" placeholder="I am grateful for..."></textarea>
+                <button class="btn-breathing" onclick="addGratitude()">
+                    <i class="fas fa-plus"></i> Add to Journal
+                </button>
+                <div class="gratitude-list" id="gratitudeList"></div>
+            </div>
+
+            <!-- Victory Log -->
+            <div class="victory-log">
+                <h3><i class="fas fa-trophy"></i> Today's Victories</h3>
+                <p style="color: var(--text-light); margin-bottom: 15px;">Celebrate every win, no matter how small. You're making progress!</p>
+                <div class="victory-input-container">
+                    <input type="text" class="victory-input" id="victoryInput" placeholder="What did you accomplish today?">
+                    <button class="btn-add-victory" onclick="addVictory()">
+                        <i class="fas fa-plus"></i> Add
+                    </button>
+                </div>
+                <div class="victory-list" id="victoryList"></div>
+            </div>
+
+            <!-- Progress Tracker -->
+            <div class="progress-tracker">
+                <h3><i class="fas fa-chart-line"></i> Your Wellness Journey</h3>
+                <div class="progress-item">
+                    <div class="progress-label">
+                        <span>Daily Goals Completed</span>
+                        <span id="goalsProgress">0%</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="goalsBar" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-label">
+                        <span>Mindfulness Practice</span>
+                        <span id="mindfulnessProgress">0%</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="mindfulnessBar" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-label">
+                        <span>Self-Care Activities</span>
+                        <span id="selfcareProgress">0%</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="selfcareBar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mood Tracker Card -->
+            <div class="mood-tracker-card">
+                <h3><i class="fas fa-smile-beam"></i> How are you feeling today?</h3>
+                <p>Track your emotional well-being - your feelings are valid and important!</p>
+                <div class="mood-options">
+                    <div class="mood-option" data-mood="amazing">
+                        <span class="mood-emoji">🤩</span>
+                        <div class="mood-label">Amazing</div>
+                    </div>
+                    <div class="mood-option" data-mood="happy">
+                        <span class="mood-emoji">😊</span>
+                        <div class="mood-label">Happy</div>
+                    </div>
+                    <div class="mood-option" data-mood="okay">
+                        <span class="mood-emoji">😐</span>
+                        <div class="mood-label">Okay</div>
+                    </div>
+                    <div class="mood-option" data-mood="sad">
+                        <span class="mood-emoji">😢</span>
+                        <div class="mood-label">Sad</div>
+                    </div>
+                    <div class="mood-option" data-mood="anxious">
+                        <span class="mood-emoji">😰</span>
+                        <div class="mood-label">Anxious</div>
+                    </div>
+                    <div class="mood-option" data-mood="tired">
+                        <span class="mood-emoji">😴</span>
+                        <div class="mood-label">Tired</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mood History -->
+            <!-- <div class="mood-history">
+                <h3><i class="fas fa-chart-bar"></i> Your Mood This Week</h3>
+                <p style="color: var(--text-light); margin-bottom: 20px;">Track your emotional patterns over time</p>
+                <div class="mood-chart" id="moodChart"></div>
+            </div> -->
+
+            <!-- Inspirational Quote Card -->
+            <div class="quote-card">
+                <button class="quote-refresh" onclick="refreshQuote()" title="New Quote">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                <div class="quote-content">
+                    <div class="quote-text" id="quoteText">Loading inspiration...</div>
+                    <div class="quote-author" id="quoteAuthor">— MindSpace</div>
+                </div>
+            </div>
+
+            <!-- Joke Card -->
+            <div class="joke-card" onclick="revealJokePunchline()">
+                <div class="joke-header">
+                    <span>😂</span>
+                    <span>Daily Dose of Laughter</span>
+                </div>
+                <div class="joke-text" id="jokeSetup">Loading a smile for you...</div>
+                <div class="joke-punchline" id="jokePunchline" style="display: none;">Click to reveal!</div>
+                <div class="joke-hint" id="jokeHint">💡 Click anywhere on this card to see the punchline!</div>
+            </div>
+
+            <!-- Emergency Support Banner -->
+            <div class="emergency-support">
+                <h3><i class="fas fa-phone-volume"></i> Need Immediate Help?</h3>
+                <p>If you're in crisis or need urgent support, please reach out to these helplines immediately.</p>
+                <div class="emergency-numbers">
+                    <div class="emergency-number">
+                        <strong>National Helpline</strong>
+                        <a href="tel:1800-599-0019">1800-599-0019</a>
+                    </div>
+                    <div class="emergency-number">
+                        <strong>Suicide Prevention</strong>
+                        <a href="tel:9152987821">9152987821</a>
+                    </div>
+                    <div class="emergency-number">
+                        <strong>NIMHANS Helpline</strong>
+                        <a href="tel:08046110007">080-46110007</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="quick-stats">
+                <div class="stat-card">
+                    <div class="stat-icon blue">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <div class="stat-details">
+                        <h3 id="messagesLeft"><span class="loading-spinner"></span></h3>
+                        <p>Messages Left Today</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon green">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="stat-details">
+                        <h3 id="daysActive"><span class="loading-spinner"></span></h3>
+                        <p>Days Active</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon orange">
+                        <i class="fas fa-fire"></i>
+                    </div>
+                    <div class="stat-details">
+                        <h3 id="currentStreak"><span class="loading-spinner"></span></h3>
+                        <p>Day Streak</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon purple">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-details">
+                        <h3 id="totalMinutes"><span class="loading-spinner"></span></h3>
+                        <p>Minutes on Platform</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <!-- <div class="activity-section">
+                <h3>
+                    <i class="fas fa-history"></i> Recent Activity
+                </h3>
+                <div id="recentActivity">
+                    <div class="empty-state">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Loading your activity...</p>
+                    </div>
+                </div>
+            </div> -->
+
+            <!-- Features Grid -->
+            <h2 class="section-title">Mental Health Resources</h2>
+            <div class="features-grid">
+                <div class="feature-card" onclick="showSection('chatbot')">
+                    <div class="feature-header">
+                        <i class="fas fa-robot"></i>
+                        <h3>AI Mental Health Assistant</h3>
+                    </div>
+                    <div class="feature-body">
+                        <p>Get immediate support from our AI assistant trained to provide empathetic, evidence-based guidance for mental health concerns. Available 24/7 with 50 free messages daily.</p>
+                        <a href="#" class="btn btn-primary" onclick="event.preventDefault(); showSection('chatbot');">
+                            <i class="fas fa-comment-dots"></i> Start Conversation
+                        </a>
+                    </div>
+                </div>
+
+                <div class="feature-card" onclick="showSection('professionals')">
+                    <div class="feature-header">
+                        <i class="fas fa-user-md"></i>
+                        <h3>Professional Support</h3>
+                    </div>
+                    <div class="feature-body">
+                        <p>Connect with licensed psychologists, counselors, and therapists who specialize in various mental health conditions. Book confidential sessions at your convenience.</p>
+                        <a href="#" class="btn btn-primary" onclick="event.preventDefault(); showSection('professionals');">
+                            <i class="fas fa-calendar-check"></i> Find a Professional
+                        </a>
+                    </div>
+                </div>
+
+                <div class="feature-card" onclick="showSection('games')">
+                    <div class="feature-header">
+                        <i class="fas fa-gamepad"></i>
+                        <h3>Cognitive Wellness Games</h3>
+                    </div>
+                    <div class="feature-body">
+                        <p>Engage in scientifically-designed games that improve focus, memory, and reduce anxiety. Make mental fitness fun with our interactive brain training activities.</p>
+                        <a href="#" class="btn btn-primary" onclick="event.preventDefault(); showSection('games');">
+                            <i class="fas fa-play-circle"></i> Play Now
+                        </a>
+                    </div>
+                </div>
+
+                <div class="feature-card" onclick="showSection('meditation')">
+                    <div class="feature-header">
+                        <i class="fas fa-spa"></i>
+                        <h3>Guided Meditation</h3>
+                    </div>
+                    <div class="feature-body">
+                        <p>Practice mindfulness with our guided meditation sessions. Reduce stress, improve sleep quality, and enhance emotional well-being through daily meditation practice.</p>
+                        <a href="#" class="btn btn-primary" onclick="event.preventDefault(); showSection('meditation');">
+                            <i class="fas fa-om"></i> Begin Meditation
+                        </a>
+                    </div>
+                </div>
+
+                <div class="feature-card" onclick="showSection('music')">
+                    <div class="feature-header">
+                        <i class="fas fa-music"></i>
+                        <h3>Therapeutic Music</h3>
+                    </div>
+                    <div class="feature-body">
+                        <p>Listen to curated playlists of calming music, nature sounds, and binaural beats designed to promote relaxation, focus, and emotional balance.</p>
+                        <a href="#" class="btn btn-primary" onclick="event.preventDefault(); showSection('music');">
+                            <i class="fas fa-headphones"></i> Listen Now
+                        </a>
+                    </div>
+                </div>
+
+                <div class="feature-card" onclick="showSection('community')">
+                    <div class="feature-header">
+                        <i class="fas fa-users"></i>
+                        <h3>Supportive Community</h3>
+                    </div>
+                    <div class="feature-body">
+                        <p>Join a safe, anonymous community where you can share experiences, find support, and connect with others on similar mental health journeys.</p>
+                        <a href="#" class="btn btn-primary" onclick="event.preventDefault(); showSection('community');">
+                            <i class="fas fa-hands-helping"></i> Join Community
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- AI Chatbot Section -->
+        <section id="chatbot" class="content-section">
+            <h2 class="section-title">AI Mental Health Assistant</h2>
+            <div class="message-banner" id="messageBanner">
+                <i class="fas fa-info-circle"></i>
+                <span id="limitText">Loading your message limit...</span>
+            </div>
+            <div class="feature-card">
+                <div class="feature-header">
+                    <i class="fas fa-robot"></i>
+                    <h3>Start Your Conversation</h3>
+                </div>
+                <div class="feature-body">
+                    <p>Our AI assistant is trained to provide compassionate, evidence-based support for various mental health concerns including anxiety, stress, depression, and more. All conversations are private and confidential.</p>
+                    <p style="margin-top: 15px;"><strong>What you can expect:</strong></p>
+                    <ul>
+                        <li>Empathetic and non-judgmental responses</li>
+                        <li>Evidence-based coping strategies</li>
+                        <li>Personalized mental health guidance</li>
+                        <li>24/7 availability for immediate support</li>
+                    </ul>
+                    <a href="{{ url_for('chatbot') }}" class="btn btn-primary" style="margin-top: 20px;">
+                        <i class="fas fa-comment-medical"></i> Open Chat Assistant
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Games Section -->
+        <section id="games" class="content-section">
+            <h2 class="section-title">Brain Games & Activities</h2>
+            <div class="info-banner">
+                <i class="fas fa-lightbulb"></i>
+                <div class="info-banner-content">
+                    <h3>Boost Your Mental Fitness</h3>
+                    <p>Regular cognitive exercises can improve focus, memory, and reduce stress levels.</p>
+                </div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-header">
+                    <i class="fas fa-brain"></i>
+                    <h3>Cognitive Wellness Activities</h3>
+                </div>
+                <div class="feature-body">
+                    <p>Explore our collection of engaging brain games designed by cognitive psychologists to enhance mental fitness, reduce anxiety, and improve overall well-being.</p>
+                    <a href="{{ url_for('games') }}" class="btn btn-primary" style="margin-top: 20px;">
+                        <i class="fas fa-gamepad"></i> Browse Games
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Professionals Section -->
+        <section id="professionals" class="content-section">
+            <h2 class="section-title">Mental Health Professionals</h2>
+            <div class="info-banner">
+                <i class="fas fa-user-shield"></i>
+                <div class="info-banner-content">
+                    <h3>Professional, Confidential Care</h3>
+                    <p>All our therapists are licensed and verified. Your sessions are 100% confidential.</p>
+                </div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-header">
+                    <i class="fas fa-stethoscope"></i>
+                    <h3>Connect with Licensed Therapists</h3>
+                </div>
+                <div class="feature-body">
+                    <p>Browse our network of verified mental health professionals including psychologists, psychiatrists, and licensed counselors. Schedule confidential sessions that fit your needs.</p>
+                    <a href="{{ url_for('professionals') }}" class="btn btn-primary" style="margin-top: 20px;">
+                        <i class="fas fa-user-md"></i> View Professionals
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Meditation Section -->
+        <section id="meditation" class="content-section">
+            <h2 class="section-title">Meditation & Mindfulness</h2>
+            <div class="info-banner">
+                <i class="fas fa-heart"></i>
+                <div class="info-banner-content">
+                    <h3>Practice Daily Mindfulness</h3>
+                    <p>Just 10 minutes of meditation daily can significantly reduce stress and improve mental clarity.</p>
+                </div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-header">
+                    <i class="fas fa-leaf"></i>
+                    <h3>Daily Meditation Practice</h3>
+                </div>
+                <div class="feature-body">
+                    <p>Access guided meditation sessions ranging from 5 to 30 minutes. Perfect for beginners and experienced practitioners alike. Build a consistent mindfulness practice.</p>
+                    <a href="{{ url_for('meditation') }}" class="btn btn-primary" style="margin-top: 20px;">
+                        <i class="fas fa-spa"></i> Start Meditating
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Music Section -->
+        <section id="music" class="content-section">
+            <h2 class="section-title">Therapeutic Music</h2>
+            <div class="info-banner">
+                <i class="fas fa-music"></i>
+                <div class="info-banner-content">
+                    <h3>Sound Healing Therapy</h3>
+                    <p>Music therapy has been proven to reduce anxiety, improve mood, and promote better sleep.</p>
+                </div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-header">
+                    <i class="fas fa-music"></i>
+                    <h3>Relaxation & Focus Soundscapes</h3>
+                </div>
+                <div class="feature-body">
+                    <p>Immerse yourself in calming music, nature sounds, and specially designed audio tracks to reduce stress, improve focus, and promote better sleep.</p>
+                    <a href="{{ url_for('music') }}" class="btn btn-primary" style="margin-top: 20px;">
+                        <i class="fas fa-headphones-alt"></i> Explore Music Library
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Community Section -->
+        <section id="community" class="content-section">
+            <h2 class="section-title">Community Support</h2>
+            <div class="info-banner">
+                <i class="fas fa-shield-alt"></i>
+                <div class="info-banner-content">
+                    <h3>Safe & Anonymous Space</h3>
+                    <p>Share your experiences in a moderated, supportive environment. You're not alone.</p>
+                </div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-header">
+                    <i class="fas fa-heart"></i>
+                    <h3>Anonymous Support Network</h3>
+                </div>
+                <div class="feature-body">
+                    <p>Join our caring community where members share experiences, offer support, and find connection. All interactions are moderated to ensure a safe, respectful environment.</p>
+                    <a href="{{ url_for('community') }}" class="btn btn-primary" style="margin-top: 20px;">
+                        <i class="fas fa-users"></i> Join the Community
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Profile Section -->
+        <section id="profile" class="content-section">
+            <h2 class="section-title">Your Profile</h2>
+            <div class="feature-card">
+                <div class="feature-header">
+                    <i class="fas fa-id-card"></i>
+                    <h3>Account Settings</h3>
+                </div>
+                <div class="feature-body">
+                    <p>Manage your personal information, privacy settings, and account preferences. View your activity history and achievements.</p>
+                    <a href="{{ url_for('profile') }}" class="btn btn-primary" style="margin-top: 20px;">
+                        <i class="fas fa-cog"></i> Manage Profile
+                    </a>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<!-- Premium Modal -->
+<div class="modal" id="premiumModal">
+    <div class="modal-content">
+        <span class="close-modal" id="closePremium">&times;</span>
+        <div class="premium-icon">💎</div>
+        <h2>Upgrade for Unlimited Access</h2>
+        <p>You've reached your daily limit of 50 messages with our AI assistant.</p>
+        <p>Upgrade now to get 50 additional messages for just <strong>$0.99 (₹99)</strong>!</p>
+        
+        <div class="payment-details">
+            <h3>Payment Information</h3>
+            <p><strong>UPI ID:</strong> mindspace@paytm</p>
+            <p><strong>Amount:</strong> $0.99 / ₹99</p>
+            <p><strong>Reference:</strong> Include your email in payment note</p>
+            <p style="font-size: 13px; margin-top: 10px;"><strong>Note:</strong> After completing payment, contact our support team with your transaction ID for immediate activation.</p>
+        </div>
+        
+        <button class="btn btn-warning" onclick="window.open('upi://pay?pa=mindspace@paytm&am=99&cu=INR', '_blank')">
+            <i class="fas fa-bolt"></i> Upgrade Now
+        </button>
+        <p class="support-contact">
+            Need help? Contact: support@mindspace.com
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// 100+ Inspirational Quotes Collection
+const quotes = [
+    { text: "You are stronger than you think. Every challenge you face is making you more resilient.", author: "Unknown" },
+    { text: "Your mental health is a priority. Your happiness is essential. Your self-care is a necessity.", author: "Unknown" },
+    { text: "Healing doesn't mean the damage never existed. It means the damage no longer controls your life.", author: "Unknown" },
+    { text: "You don't have to be positive all the time. It's perfectly okay to feel sad, angry, annoyed, frustrated, scared and anxious. Having feelings doesn't make you a negative person. It makes you human.", author: "Lori Deschene" },
+    { text: "Be proud of yourself for how hard you're trying. You're doing better than you think.", author: "Unknown" },
+    { text: "You are worthy of love, respect, and all good things life has to offer—including peace of mind.", author: "Unknown" },
+    { text: "Your present circumstances don't determine where you can go; they merely determine where you start.", author: "Nido Qubein" },
+    { text: "Small steps in the right direction can turn out to be the biggest steps of your life.", author: "Unknown" },
+    { text: "You've survived 100% of your worst days. You're doing great.", author: "Unknown" },
+    { text: "Mental health is not a destination, but a process. It's about how you drive, not where you're going.", author: "Noam Shpancer" },
+    { text: "Your illness does not define you. Your strength and courage does.", author: "Unknown" },
+    { text: "It's okay to not be okay, as long as you're not giving up.", author: "Karen Salmansohn" },
+    { text: "Growth is painful. Change is painful. But nothing is as painful as staying stuck somewhere you don't belong.", author: "Mandy Hale" },
+    { text: "You are enough. You have enough. You do enough. Breathe.", author: "Unknown" },
+    { text: "Rock bottom became the solid foundation on which I rebuilt my life.", author: "J.K. Rowling" },
+    { text: "The greatest glory in living lies not in never falling, but in rising every time we fall.", author: "Nelson Mandela" },
+    { text: "What lies behind us and what lies before us are tiny matters compared to what lies within us.", author: "Ralph Waldo Emerson" },
+    { text: "You don't have to control your thoughts. You just have to stop letting them control you.", author: "Dan Millman" },
+    { text: "Be gentle with yourself. You're doing the best you can.", author: "Unknown" },
+    { text: "Your pace doesn't matter. Forward is forward.", author: "Unknown" }
+];
+
+// 50+ Positive Affirmations
+const affirmations = [
+    "I am worthy of love, happiness, and success",
+    "I choose to focus on what I can control",
+    "Every day, I am becoming a better version of myself",
+    "I am resilient and can handle whatever comes my way",
+    "My feelings are valid and I honor them",
+    "I am doing my best, and that is enough",
+    "I deserve rest and I allow myself to take breaks",
+    "I am capable of overcoming any challenge",
+    "My mental health is just as important as my physical health",
+    "I am grateful for the progress I've made",
+    "I choose peace over worry",
+    "I am surrounded by love and support",
+    "Every breath I take calms my mind and body",
+    "I release what I cannot control",
+    "I am proud of myself for trying",
+    "My story isn't over yet",
+    "I am healing a little more each day",
+    "I trust the process of my journey",
+    "I am stronger than my struggles",
+    "Today, I choose joy",
+    "I deserve compassion from myself",
+    "My past does not define my future",
+    "I am worthy of good things",
+    "I give myself permission to feel all emotions",
+    "I am making progress even when I can't see it",
+    "My mental wellness is a priority",
+    "I celebrate small victories",
+    "I am not alone in my struggles",
+    "I choose to believe in myself",
+    "Every day is a fresh start"
+];
+
+// 100+ Jokes Collection
+const jokes = [
+    { setup: "Why did the therapist bring a ladder to work?", punchline: "To help their patients reach new heights in their mental health journey! 🪜" },
+    { setup: "What did the anxious grape say?", punchline: "Nothing, it just let out a little wine! 🍷" },
+    { setup: "Why don't scientists trust atoms?", punchline: "Because they make up everything... just like my anxiety at 3 AM! ⚛️" },
+    { setup: "What's a therapist's favorite exercise?", punchline: "Emotional squats – they help you get through the ups and downs! 💪" },
+    { setup: "Why did the meditation app go to therapy?", punchline: "It had too many notifications and needed to find its inner peace! 🧘" },
+    { setup: "What do you call a fake noodle?", punchline: "An impasta! Just like my imposter syndrome! 🍝" },
+    { setup: "Why did the smartphone need therapy?", punchline: "It had too many apps and couldn't handle the emotional downloads! 📱" },
+    { setup: "What do you call a bear with no teeth?", punchline: "A gummy bear! Still sweet despite the challenges! 🧸" },
+    { setup: "Why did the scarecrow win an award?", punchline: "He was outstanding in his field! A true mental health champion! 🌾" },
+    { setup: "Why don't skeletons fight each other?", punchline: "They don't have the guts! But we do – we're working on our courage! 💀" }
+];
+
+// Breathing exercise variables
+let breathingInterval;
+let isBreathing = false;
+
+// Mobile menu toggle
+const menuToggle = document.getElementById('menuToggle');
+const sidebar = document.getElementById('sidebar');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+menuToggle.addEventListener('click', function() {
+    sidebar.classList.toggle('mobile-visible');
+    sidebarOverlay.classList.toggle('active');
+    
+    const icon = this.querySelector('i');
+    if (sidebar.classList.contains('mobile-visible')) {
+        icon.classList.remove('fa-bars');
+        icon.classList.add('fa-times');
+    } else {
+        icon.classList.remove('fa-times');
+        icon.classList.add('fa-bars');
+    }
+});
+
+sidebarOverlay.addEventListener('click', function() {
+    sidebar.classList.remove('mobile-visible');
+    sidebarOverlay.classList.remove('active');
+    menuToggle.querySelector('i').classList.remove('fa-times');
+    menuToggle.querySelector('i').classList.add('fa-bars');
+});
+
+// Update current date and time
+function updateDateTime() {
+    const now = new Date();
+    const options = { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    };
+    document.getElementById('currentDateTime').textContent = now.toLocaleDateString('en-US', options);
+}
+
+updateDateTime();
+setInterval(updateDateTime, 60000);
+
+// Quote functionality
+let currentQuoteIndex = -1;
+
+function getRandomQuote() {
+    let newIndex;
+    do {
+        newIndex = Math.floor(Math.random() * quotes.length);
+    } while (newIndex === currentQuoteIndex && quotes.length > 1);
+    currentQuoteIndex = newIndex;
+    return quotes[newIndex];
+}
+
+function displayQuote() {
+    const quote = getRandomQuote();
+    document.getElementById('quoteText').textContent = quote.text;
+    document.getElementById('quoteAuthor').textContent = `— ${quote.author}`;
+}
+
+function refreshQuote() {
+    displayQuote();
+}
+
+// Affirmation functionality
+let currentAffirmationIndex = -1;
+
+function getRandomAffirmation() {
+    let newIndex;
+    do {
+        newIndex = Math.floor(Math.random() * affirmations.length);
+    } while (newIndex === currentAffirmationIndex && affirmations.length > 1);
+    currentAffirmationIndex = newIndex;
+    return affirmations[newIndex];
+}
+
+function displayAffirmation() {
+    const affirmation = getRandomAffirmation();
+    document.getElementById('affirmationText').textContent = affirmation;
+}
+
+function refreshAffirmation() {
+    displayAffirmation();
+}
+
+// Breathing exercise functionality
+document.getElementById('startBreathing').addEventListener('click', startBreathingExercise);
+document.getElementById('stopBreathing').addEventListener('click', stopBreathingExercise);
+
+function startBreathingExercise() {
+    if (isBreathing) return;
+    
+    isBreathing = true;
+    document.getElementById('startBreathing').style.display = 'none';
+    document.getElementById('stopBreathing').style.display = 'block';
+    
+    const circle = document.getElementById('breathingCircle');
+    let phase = 0;
+    const phases = ['Breathe In', 'Hold', 'Breathe Out', 'Hold'];
+    const durations = [4000, 2000, 4000, 2000];
+    
+    function breatheCycle() {
+        if (!isBreathing) return;
+        
+        circle.textContent = phases[phase];
+        
+        if (phase === 0) {
+            circle.classList.add('inhale');
+            circle.classList.remove('exhale');
+        } else if (phase === 2) {
+            circle.classList.add('exhale');
+            circle.classList.remove('inhale');
+        }
+        
+        setTimeout(() => {
+            phase = (phase + 1) % 4;
+            breatheCycle();
+        }, durations[phase]);
+    }
+    
+    breatheCycle();
+}
+
+function stopBreathingExercise() {
+    isBreathing = false;
+    document.getElementById('startBreathing').style.display = 'block';
+    document.getElementById('stopBreathing').style.display = 'none';
+    
+    const circle = document.getElementById('breathingCircle');
+    circle.textContent = 'Breathe';
+    circle.classList.remove('inhale', 'exhale');
+}
+
+// Gratitude journal functionality
+function addGratitude() {
+    const input = document.getElementById('gratitudeInput');
+    const text = input.value.trim();
+    
+    if (text) {
+        const gratitudeList = document.getElementById('gratitudeList');
+        const item = document.createElement('div');
+        item.className = 'gratitude-item';
+        item.innerHTML = `<i class="fas fa-heart"></i><span>${text}</span>`;
+        gratitudeList.insertBefore(item, gratitudeList.firstChild);
+        
+        input.value = '';
+        
+        // Save to localStorage
+        saveGratitude(text);
+        
+        // Show success message
+        showToast('Gratitude added! 🙏', 'success');
+    }
+}
+
+function saveGratitude(text) {
+    let gratitudes = JSON.parse(localStorage.getItem('gratitudes') || '[]');
+    gratitudes.unshift({ text, date: new Date().toISOString() });
+    gratitudes = gratitudes.slice(0, 50);
+    localStorage.setItem('gratitudes', JSON.stringify(gratitudes));
+}
+
+function loadGratitudes() {
+    const gratitudes = JSON.parse(localStorage.getItem('gratitudes') || '[]');
+    const gratitudeList = document.getElementById('gratitudeList');
+    
+    gratitudes.forEach(g => {
+        const item = document.createElement('div');
+        item.className = 'gratitude-item';
+        item.innerHTML = `<i class="fas fa-heart"></i><span>${g.text}</span>`;
+        gratitudeList.appendChild(item);
+    });
+}
+
+// Victory log functionality
+function addVictory() {
+    const input = document.getElementById('victoryInput');
+    const text = input.value.trim();
+    
+    if (text) {
+        const victoryList = document.getElementById('victoryList');
+        const item = document.createElement('div');
+        item.className = 'victory-item';
+        item.innerHTML = `<i class="fas fa-star"></i><span>${text}</span>`;
+        victoryList.insertBefore(item, victoryList.firstChild);
+        
+        input.value = '';
+        
+        // Save to localStorage
+        saveVictory(text);
+        
+        // Update progress
+        updateProgress();
+        
+        // Show success message
+        showToast('Victory logged! 🎉', 'success');
+    }
+}
+
+function saveVictory(text) {
+    let victories = JSON.parse(localStorage.getItem('victories') || '[]');
+    victories.unshift({ text, date: new Date().toISOString() });
+    victories = victories.slice(0, 50);
+    localStorage.setItem('victories', JSON.stringify(victories));
+}
+
+function loadVictories() {
+    const victories = JSON.parse(localStorage.getItem('victories') || '[]');
+    const victoryList = document.getElementById('victoryList');
+    
+    const today = new Date().toDateString();
+    const todayVictories = victories.filter(v => new Date(v.date).toDateString() === today);
+    
+    todayVictories.forEach(v => {
+        const item = document.createElement('div');
+        item.className = 'victory-item';
+        item.innerHTML = `<i class="fas fa-star"></i><span>${v.text}</span>`;
+        victoryList.appendChild(item);
+    });
+}
+
+// Progress tracking
+function updateProgress() {
+    const victories = JSON.parse(localStorage.getItem('victories') || '[]');
+    const gratitudes = JSON.parse(localStorage.getItem('gratitudes') || '[]');
+    const moods = JSON.parse(localStorage.getItem('moods') || '[]');
+    
+    const today = new Date().toDateString();
+    const todayVictories = victories.filter(v => new Date(v.date).toDateString() === today).length;
+    const todayGratitudes = gratitudes.filter(g => new Date(g.date).toDateString() === today).length;
+    const todayMoods = moods.filter(m => new Date(m.date).toDateString() === today).length;
+    
+    // Goals progress (victories)
+    const goalsProgress = Math.min((todayVictories / 3) * 100, 100);
+    document.getElementById('goalsProgress').textContent = `${Math.round(goalsProgress)}%`;
+    document.getElementById('goalsBar').style.width = `${goalsProgress}%`;
+    
+    // Mindfulness progress (breathing + meditation tracking)
+    const breathingSessions = parseInt(localStorage.getItem('breathingSessions') || '0');
+    const mindfulnessProgress = Math.min((breathingSessions / 3) * 100, 100);
+    document.getElementById('mindfulnessProgress').textContent = `${Math.round(mindfulnessProgress)}%`;
+    document.getElementById('mindfulnessBar').style.width = `${mindfulnessProgress}%`;
+    
+    // Self-care progress (gratitudes)
+    const selfcareProgress = Math.min((todayGratitudes / 3) * 100, 100);
+    document.getElementById('selfcareProgress').textContent = `${Math.round(selfcareProgress)}%`;
+    document.getElementById('selfcareBar').style.width = `${selfcareProgress}%`;
+}
+
+// Mood chart functionality
+function initMoodChart() {
+    const moods = JSON.parse(localStorage.getItem('moods') || '[]');
+    const chartContainer = document.getElementById('moodChart');
+    
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const today = new Date().getDay();
+    const weekDays = [];
+    
+    for (let i = 6; i >= 0; i--) {
+        const dayIndex = (today - i + 7) % 7;
+        weekDays.push(days[dayIndex]);
+    }
+    
+    const moodScores = weekDays.map((day, index) => {
+        const date = new Date();
+        date.setDate(date.getDate() - (6 - index));
+        const dayMoods = moods.filter(m => 
+            new Date(m.date).toDateString() === date.toDateString()
+        );
+        
+        if (dayMoods.length === 0) return 0;
+        
+        const moodValues = {
+            'amazing': 5,
+            'happy': 4,
+            'okay': 3,
+            'sad': 2,
+            'anxious': 2,
+            'tired': 2
+        };
+        
+        const avgScore = dayMoods.reduce((sum, m) => sum + (moodValues[m.mood] || 3), 0) / dayMoods.length;
+        return avgScore * 20;
+    });
+    
+    chartContainer.innerHTML = weekDays.map((day, index) => `
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+            <div class="mood-bar" style="height: ${moodScores[index]}%" title="${day}: ${moodScores[index] > 0 ? 'Tracked' : 'No data'}"></div>
+            <div class="mood-bar-label">${day}</div>
+        </div>
+    `).join('');
+}
+
+// Joke functionality
+let currentJokeIndex = -1;
+let jokePunchlineRevealed = false;
+
+function getRandomJoke() {
+    let newIndex;
+    do {
+        newIndex = Math.floor(Math.random() * jokes.length);
+    } while (newIndex === currentJokeIndex && jokes.length > 1);
+    currentJokeIndex = newIndex;
+    return jokes[newIndex];
+}
+
+function displayJoke() {
+    const joke = getRandomJoke();
+    document.getElementById('jokeSetup').textContent = joke.setup;
+    document.getElementById('jokePunchline').textContent = joke.punchline;
+    document.getElementById('jokePunchline').style.display = 'none';
+    document.getElementById('jokeHint').style.display = 'block';
+    jokePunchlineRevealed = false;
+}
+
+function revealJokePunchline() {
+    if (!jokePunchlineRevealed) {
+        document.getElementById('jokePunchline').style.display = 'block';
+        document.getElementById('jokeHint').style.display = 'none';
+        jokePunchlineRevealed = true;
+    } else {
+        displayJoke();
+    }
+}
+
+// Mood tracker functionality
+document.querySelectorAll('.mood-option').forEach(option => {
+    option.addEventListener('click', function() {
+        document.querySelectorAll('.mood-option').forEach(opt => opt.classList.remove('selected'));
+        this.classList.add('selected');
+        
+        const mood = this.getAttribute('data-mood');
+        saveMood(mood);
+        
+        const messages = {
+            'amazing': '🌟 That\'s fantastic! Keep riding this positive wave!',
+            'happy': '😊 Wonderful! Your happiness matters!',
+            'okay': '👍 That\'s perfectly fine. Every day doesn\'t have to be perfect.',
+            'sad': '💙 It\'s okay to feel sad. We\'re here for you. Consider talking to someone.',
+            'anxious': '🫂 Take a deep breath. You\'re not alone. Try our meditation exercises.',
+            'tired': '😴 Rest is important. Take care of yourself. You deserve it.'
+        };
+        
+        setTimeout(() => {
+            showToast(messages[mood] || 'Thank you for sharing how you feel!', 'info');
+            initMoodChart();
+            updateProgress();
+        }, 300);
+    });
+});
+
+async function saveMood(mood) {
+    try {
+        // Save to backend
+        const response = await fetch('/api/save_mood', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ mood: mood, timestamp: new Date().toISOString() })
+        });
+        const data = await response.json();
+        console.log('Mood saved:', data);
+    } catch (error) {
+        console.error('Error saving mood:', error);
+    }
+    
+    // Save to localStorage
+    let moods = JSON.parse(localStorage.getItem('moods') || '[]');
+    moods.push({ mood, date: new Date().toISOString() });
+    localStorage.setItem('moods', JSON.stringify(moods));
+}
+
+// Toast notification
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: ${type === 'success' ? '#51cf66' : type === 'error' ? '#ff6b6b' : '#667eea'};
+        color: white;
+        padding: 15px 25px;
+        border-radius: 10px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        z-index: 10000;
+        animation: slideInUp 0.3s ease;
+        max-width: 300px;
+    `;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.animation = 'slideOutDown 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+// Navigation functionality
+function showSection(sectionId) {
+    document.querySelectorAll('.content-section').forEach(section => {
+        section.classList.remove('active');
+    });
+    
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    const selectedSection = document.getElementById(sectionId);
+    if (selectedSection) {
+        selectedSection.classList.add('active');
+    }
+    
+    const navItem = document.querySelector(`[data-section="${sectionId}"]`);
+    if (navItem) {
+        navItem.classList.add('active');
+    }
+    
+    sidebar.classList.remove('mobile-visible');
+    sidebarOverlay.classList.remove('active');
+    menuToggle.querySelector('i').classList.remove('fa-times');
+    menuToggle.querySelector('i').classList.add('fa-bars');
+    
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.nav-item[data-section]').forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            const section = this.getAttribute('data-section');
+            showSection(section);
+        });
+    });
+    
+    if (window.location.hash) {
+        const section = window.location.hash.substring(1);
+        showSection(section);
+    }
+    
+    // Initialize all features
+    displayQuote();
+    displayAffirmation();
+    displayJoke();
+    loadGratitudes();
+    loadVictories();
+    initMoodChart();
+    updateProgress();
+    loadUserStats();
+    loadMessageLimit();
+    loadRecentActivity();
+    loadNotifications();
+});
+
+// Premium Modal Functions
+function showPremiumModal() {
+    document.getElementById('premiumModal').style.display = 'flex';
+}
+
+function closePremiumModal() {
+    document.getElementById('premiumModal').style.display = 'none';
+}
+
+document.getElementById('closePremium').addEventListener('click', closePremiumModal);
+
+document.getElementById('premiumModal').addEventListener('click', function(event) {
+    if (event.target === this) {
+        closePremiumModal();
+    }
+});
+
+// Load user statistics
+async function loadUserStats() {
+    try {
+        const response = await fetch('/api/user_stats');
+        const data = await response.json();
+        
+        if (data.success) {
+            document.getElementById('messagesLeft').textContent = data.messages_left || '0';
+            document.getElementById('daysActive').textContent = data.days_active || '1';
+            document.getElementById('currentStreak').textContent = data.current_streak || '1';
+            document.getElementById('totalMinutes').textContent = data.total_minutes || '0';
+        } else {
+            document.getElementById('messagesLeft').textContent = '50';
+            document.getElementById('daysActive').textContent = '1';
+            document.getElementById('currentStreak').textContent = '1';
+            document.getElementById('totalMinutes').textContent = '0';
+        }
+    } catch (error) {
+        console.error('Error loading user stats:', error);
+        document.getElementById('messagesLeft').textContent = '50';
+        document.getElementById('daysActive').textContent = '1';
+        document.getElementById('currentStreak').textContent = '1';
+        document.getElementById('totalMinutes').textContent = '0';
+    }
+}
+
+// Load message limit from API
+async function loadMessageLimit() {
+    try {
+        const response = await fetch('/api/message_limit');
+        const data = await response.json();
+        
+        const limitText = document.getElementById('limitText');
+        const messageBanner = document.getElementById('messageBanner');
+        
+        if (data.limit_reached) {
+            limitText.innerHTML = '<strong>Daily limit reached!</strong> You\'ve used all 50 messages today. <a href="#" onclick="showPremiumModal(); return false;">Upgrade for 50 more messages</a>';
+            messageBanner.classList.add('warning');
+        } else {
+            const remaining = 50 - (data.message_count || 0);
+            limitText.innerHTML = `<strong>${remaining} messages remaining</strong> out of your 50 daily free messages`;
+            messageBanner.classList.remove('warning');
+        }
+    } catch (error) {
+        console.error('Error loading message limit:', error);
+        document.getElementById('limitText').innerHTML = '<strong>50 messages available</strong> - Start chatting with our AI assistant';
+    }
+}
+
+// Load recent activity
+async function loadRecentActivity() {
+    try {
+        const response = await fetch('/api/recent_activity');
+        const data = await response.json();
+        
+        const activityContainer = document.getElementById('recentActivity');
+        
+        if (data.success && data.activities && data.activities.length > 0) {
+            activityContainer.innerHTML = data.activities.map(activity => `
+                <div class="activity-item">
+                    <div class="activity-icon">
+                        <i class="fas ${getActivityIcon(activity.type)}"></i>
+                    </div>
+                    <div class="activity-details">
+                        <h4>${activity.title}</h4>
+                        <p>${activity.description}</p>
+                    </div>
+                    <div class="activity-time">${formatTime(activity.timestamp)}</div>
+                </div>
+            `).join('');
+        } else {
+            activityContainer.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-info-circle"></i>
+                    <p>No recent activity yet. Start exploring to see your activity here!</p>
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Error loading recent activity:', error);
+        document.getElementById('recentActivity').innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-info-circle"></i>
+                <p>Start using MindSpace to track your activities!</p>
+            </div>
+        `;
+    }
+}
+
+// Load notifications
+async function loadNotifications() {
+    try {
+        const response = await fetch('/api/notifications');
+        const data = await response.json();
+        
+        const notificationBadge = document.getElementById('notificationCount');
+        
+        if (data.success && data.count > 0) {
+            notificationBadge.textContent = data.count;
+            notificationBadge.style.display = 'flex';
+        } else {
+            notificationBadge.style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Error loading notifications:', error);
+        document.getElementById('notificationCount').style.display = 'none';
+    }
+}
+
+// Helper function to get activity icon
+function getActivityIcon(type) {
+    const icons = {
+        'chat': 'fa-comments',
+        'game': 'fa-gamepad',
+        'meditation': 'fa-spa',
+        'music': 'fa-music',
+        'community': 'fa-users',
+        'professional': 'fa-user-md',
+        'profile': 'fa-user-edit',
+        'mood': 'fa-smile',
+        'breathing': 'fa-wind',
+        'gratitude': 'fa-heart',
+        'victory': 'fa-trophy'
+    };
+    return icons[type] || 'fa-circle';
+}
+
+// Helper function to format timestamp
+function formatTime(timestamp) {
+    if (!timestamp) return 'Just now';
+    
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins} min ago`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    return date.toLocaleDateString();
+}
+
+// Refresh data periodically
+setInterval(loadUserStats, 60000);
+setInterval(loadMessageLimit, 30000);
+setInterval(loadRecentActivity, 120000);
+setInterval(loadNotifications, 60000);
+
+// Notification bell click handler
+document.getElementById('notificationBell').addEventListener('click', function() {
+    showToast('🔔 No new notifications at this time.', 'info');
+});
+
+// Add animations
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes slideOutDown {
+        from {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        to {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+    }
+`;
+document.head.appendChild(style);
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    // Alt + 1-8 for quick navigation
+    if (e.altKey && e.key >= '1' && e.key <= '8') {
+        e.preventDefault();
+        const sections = ['dashboard', 'chatbot', 'games', 'professionals', 'meditation', 'music', 'community', 'profile'];
+        const sectionIndex = parseInt(e.key) - 1;
+        if (sections[sectionIndex]) {
+            showSection(sections[sectionIndex]);
+        }
+    }
+    
+    // Escape to close modal
+    if (e.key === 'Escape') {
+        closePremiumModal();
+    }
+});
+
+// Save breathing session count
+function incrementBreathingSession() {
+    let sessions = parseInt(localStorage.getItem('breathingSessions') || '0');
+    sessions++;
+    localStorage.setItem('breathingSessions', sessions.toString());
+    updateProgress();
+}
+
+// Modify stop breathing to increment counter
+const originalStopBreathing = stopBreathingExercise;
+stopBreathingExercise = function() {
+    originalStopBreathing();
+    incrementBreathingSession();
+    showToast('Great job! Breathing exercise completed. 🧘', 'success');
+};
+
+// Auto-save feature for gratitude
+document.getElementById('gratitudeInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        addGratitude();
+    }
+});
+
+// Auto-save feature for victory
+document.getElementById('victoryInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        addVictory();
+    }
+});
+
+// Daily reset check
+function checkDailyReset() {
+    const lastVisit = localStorage.getItem('lastVisit');
+    const today = new Date().toDateString();
+    
+    if (lastVisit !== today) {
+        localStorage.setItem('lastVisit', today);
+        localStorage.setItem('breathingSessions', '0');
+        
+        // Show welcome back message
+        setTimeout(() => {
+            showToast('Welcome back! Start your day with positivity! ✨', 'info');
+        }, 1000);
+    }
+}
+
+checkDailyReset();
+
+// Motivational reminders
+function showMotivationalReminder() {
+    const reminders = [
+        "Remember to take breaks and breathe! 🌬️",
+        "You're doing amazing! Keep going! 💪",
+        "Time for a quick stretch! Your body will thank you! 🧘",
+        "Have you logged your victories today? 🏆",
+        "Don't forget to practice gratitude! 🙏",
+        "Your mental health matters! Take care of yourself! 💚",
+        "Remember: Progress, not perfection! 🌱",
+        "You are stronger than you think! 💎"
+    ];
+    
+    const randomReminder = reminders[Math.floor(Math.random() * reminders.length)];
+    showToast(randomReminder, 'info');
+}
+
+// Show reminder every 30 minutes
+setInterval(showMotivationalReminder, 1800000);
+
+//励志提醒在活动30分钟后
+let activityTimer = setTimeout(() => {
+    showMotivationalReminder();
+}, 1800000);
+
+// Reset activity timer on user interaction
+['click', 'keypress', 'scroll'].forEach(event => {
+    document.addEventListener(event, () => {
+        clearTimeout(activityTimer);
+        activityTimer = setTimeout(showMotivationalReminder, 1800000);
+    });
+});
+
+// Celebrate milestones
+function checkMilestones() {
+    const victories = JSON.parse(localStorage.getItem('victories') || '[]');
+    const gratitudes = JSON.parse(localStorage.getItem('gratitudes') || '[]');
+    const moods = JSON.parse(localStorage.getItem('moods') || '[]');
+    
+    // Check for first victory
+    if (victories.length === 1) {
+        showToast('🎉 Congratulations on logging your first victory!', 'success');
+    }
+    
+    // Check for 10 victories
+    if (victories.length === 10) {
+        showToast('🏆 Amazing! You\'ve logged 10 victories!', 'success');
+    }
+    
+    // Check for 7-day streak
+    if (gratitudes.length >= 7) {
+        const lastWeek = gratitudes.slice(0, 7);
+        const uniqueDays = new Set(lastWeek.map(g => new Date(g.date).toDateString()));
+        if (uniqueDays.size === 7) {
+            showToast('🔥 Incredible! 7-day gratitude streak!', 'success');
+        }
+    }
+}
+
+// Check milestones when data changes
+setInterval(checkMilestones, 5000);
+
+// Accessibility improvements
+document.querySelectorAll('.mood-option').forEach(option => {
+    option.setAttribute('role', 'button');
+    option.setAttribute('tabindex', '0');
+    option.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            this.click();
+        }
+    });
+});
+
+// Add focus indicators
+const style2 = document.createElement('style');
+style2.textContent = `
+    .mood-option:focus,
+    .btn:focus,
+    .nav-item:focus {
+        outline: 3px solid var(--primary-color);
+        outline-offset: 2px;
+    }
+    
+    .btn-breathing:focus {
+        outline: 3px solid rgba(255,255,255,0.5);
+        outline-offset: 2px;
+    }
+`;
+document.head.appendChild(style2);
+
+// Performance optimization - Lazy load images
+if ('IntersectionObserver' in window) {
+    const imageObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const img = entry.target;
+                if (img.dataset.src) {
+                    img.src = img.dataset.src;
+                    img.removeAttribute('data-src');
+                    imageObserver.unobserve(img);
+                }
+            }
+        });
+    });
+    
+    document.querySelectorAll('img[data-src]').forEach(img => {
+        imageObserver.observe(img);
+    });
+}
+
+// Service Worker registration for offline support (if available)
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').then(
+            registration => console.log('ServiceWorker registered'),
+            err => console.log('ServiceWorker registration failed')
+        );
+    });
+}
+
+// Export data functionality (for user backup)
+function exportUserData() {
+    const data = {
+        victories: JSON.parse(localStorage.getItem('victories') || '[]'),
+        gratitudes: JSON.parse(localStorage.getItem('gratitudes') || '[]'),
+        moods: JSON.parse(localStorage.getItem('moods') || '[]'),
+        breathingSessions: localStorage.getItem('breathingSessions') || '0',
+        exportDate: new Date().toISOString()
+    };
+    
+    const dataStr = JSON.stringify(data, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `mindspace-data-${new Date().toISOString().split('T')[0]}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+    
+    showToast('Your data has been exported! 💾', 'success');
+}
+
+// Make export function available globally
+window.exportUserData = exportUserData;
+
+// Console message for developers
+console.log('%cMindSpace Dashboard', 'color: #667eea; font-size: 24px; font-weight: bold;');
+console.log('%cTaking care of your mental health, one step at a time. 💚', 'color: #51cf66; font-size: 14px;');
+console.log('%cKeyboard shortcuts:', 'color: #667eea; font-size: 14px; font-weight: bold;');
+console.log('Alt + 1-8: Navigate between sections');
+console.log('Escape: Close modals');
+console.log('%cType exportUserData() to backup your data', 'color: #ff9068; font-size: 12px;');
+
+// Initialize everything on load
+window.addEventListener('load', function() {
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            const href = this.getAttribute('href');
+            if (href !== '#') {
+                e.preventDefault();
+                const target = document.querySelector(href);
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            }
+        });
+    });
+    
+    // Add loaded class for animations
+    document.body.classList.add('loaded');
+    
+    // Show welcome message after 2 seconds
+    setTimeout(() => {
+        const hour = new Date().getHours();
+        let greeting = 'Hello';
+        if (hour < 12) greeting = 'Good morning';
+        else if (hour < 18) greeting = 'Good afternoon';
+        else greeting = 'Good evening';
+        
+        showToast(`${greeting}! Welcome to MindSpace 🌟`, 'info');
+    }, 2000);
+});
+
+// Handle online/offline status
+window.addEventListener('online', () => {
+    showToast('You\'re back online! 🌐', 'success');
+});
+
+window.addEventListener('offline', () => {
+    showToast('You\'re offline. Some features may be limited. 📵', 'info');
+});
+
+// Prevent accidental page reload
+window.addEventListener('beforeunload', function (e) {
+    const unsavedInput = document.getElementById('gratitudeInput').value.trim() || 
+                         document.getElementById('victoryInput').value.trim();
+    
+    if (unsavedInput) {
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
+    }
+});
+
+// Dark mode toggle (optional feature)
+function toggleDarkMode() {
+    document.body.classList.toggle('dark-mode');
+    const isDark = document.body.classList.contains('dark-mode');
+    localStorage.setItem('darkMode', isDark ? 'enabled' : 'disabled');
+    showToast(`${isDark ? 'Dark' : 'Light'} mode ${isDark ? 'enabled' : 'disabled'}! ${isDark ? '🌙' : '☀️'}`, 'info');
+}
+
+// Check for saved dark mode preference
+if (localStorage.getItem('darkMode') === 'enabled') {
+    document.body.classList.add('dark-mode');
+}
+
+// Make dark mode toggle available globally
+window.toggleDarkMode = toggleDarkMode;
+
+// Print statistics for debugging
+console.log('%cCurrent Statistics:', 'color: #667eea; font-size: 14px; font-weight: bold;');
+console.log('Victories:', JSON.parse(localStorage.getItem('victories') || '[]').length);
+console.log('Gratitudes:', JSON.parse(localStorage.getItem('gratitudes') || '[]').length);
+console.log('Moods tracked:', JSON.parse(localStorage.getItem('moods') || '[]').length);
+console.log('Breathing sessions:', localStorage.getItem('breathingSessions') || '0');
+
+</script>
+
+<style>
+/* Dark mode styles (optional) */
+body.dark-mode {
+    --bg-light: #1a1a2e;
+    --white: #16213e;
+    --text-dark: #eaeaea;
+    --text-light: #a0a0a0;
+    background-color: #0f0f1e;
+}
+
+body.dark-mode .sidebar {
+    background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+}
+
+body.dark-mode .top-header,
+body.dark-mode .stat-card,
+body.dark-mode .feature-card,
+body.dark-mode .activity-section,
+body.dark-mode .victory-log,
+body.dark-mode .progress-tracker,
+body.dark-mode .mood-history {
+    background: #16213e;
+    color: var(--text-dark);
+}
+
+body.dark-mode .modal-content {
+    background: #16213e;
+}
+
+/* Loading animation */
+body:not(.loaded) .content-section > * {
+    opacity: 0;
+}
+
+body.loaded .content-section > * {
+    animation: fadeIn 0.5s ease forwards;
+}
+
+/* Smooth transitions */
+* {
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-light);
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-dark);
+}
+
+/* Print styles */
+@media print {
+    .sidebar,
+    .top-header,
+    .menu-toggle,
+    .btn,
+    .modal {
+        display: none !important;
+    }
+    
+    .main-content {
+        margin-left: 0;
+    }
+    
+    .content-section {
+        display: block !important;
+    }
+}
+</style>
+{% endblock %}

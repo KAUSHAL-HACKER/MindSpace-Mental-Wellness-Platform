@@ -1,0 +1,868 @@
+{% extends "base.html" %}
+
+{% block title %}Brain Games - MindSpace{% endblock %}
+
+{% block styles %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --secondary-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --success-gradient: linear-gradient(135deg, #51cf66 0%, #37b24d 100%);
+        --warning-gradient: linear-gradient(135deg, #ffd43b 0%, #ffa94d 100%);
+        --danger-gradient: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+        --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        --card-hover-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    body {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+    }
+
+    .games-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+
+    .back-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 24px;
+        background: white;
+        color: #667eea;
+        text-decoration: none;
+        border-radius: 12px;
+        font-weight: 600;
+        box-shadow: var(--card-shadow);
+        transition: all 0.3s ease;
+        margin-bottom: 30px;
+    }
+
+    .back-button:hover {
+        transform: translateX(-5px);
+        box-shadow: var(--card-hover-shadow);
+    }
+
+    .hero-section {
+        text-align: center;
+        padding: 60px 20px;
+        background: white;
+        border-radius: 24px;
+        box-shadow: var(--card-shadow);
+        margin-bottom: 50px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 6px;
+        background: var(--primary-gradient);
+    }
+
+    .hero-section h1 {
+        font-size: 3rem;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 15px;
+        animation: slideDown 0.6s ease;
+    }
+
+    .hero-section p {
+        font-size: 1.2rem;
+        color: #718096;
+        animation: slideUp 0.6s ease;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .games-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 30px;
+        margin-bottom: 50px;
+    }
+
+    .game-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: var(--card-shadow);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        animation: fadeInUp 0.6s ease backwards;
+    }
+
+    .game-card:nth-child(1) { animation-delay: 0.1s; }
+    .game-card:nth-child(2) { animation-delay: 0.2s; }
+    .game-card:nth-child(3) { animation-delay: 0.3s; }
+    .game-card:nth-child(4) { animation-delay: 0.4s; }
+    .game-card:nth-child(5) { animation-delay: 0.5s; }
+    .game-card:nth-child(6) { animation-delay: 0.6s; }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(40px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .game-card:hover {
+        transform: translateY(-12px) scale(1.02);
+        box-shadow: var(--card-hover-shadow);
+    }
+
+    .game-icon-wrapper {
+        padding: 40px;
+        text-align: center;
+        position: relative;
+        background: linear-gradient(135deg, #e0e7ff 0%, #fce7f3 100%);
+    }
+
+    .game-icon-wrapper::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: var(--primary-gradient);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+
+    .game-card:hover .game-icon-wrapper::after {
+        transform: scaleX(1);
+    }
+
+    .game-icon {
+        font-size: 5rem;
+        animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+
+    .game-content {
+        padding: 30px;
+    }
+
+    .game-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 12px;
+    }
+
+    .game-description {
+        color: #718096;
+        font-size: 0.95rem;
+        line-height: 1.7;
+        margin-bottom: 20px;
+    }
+
+    .game-meta {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+
+    .meta-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        background: #f7fafc;
+        color: #718096;
+    }
+
+    .difficulty-easy {
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        color: #155724;
+    }
+
+    .difficulty-medium {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+        color: #856404;
+    }
+
+    .difficulty-hard {
+        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+        color: #721c24;
+    }
+
+    .benefits-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 25px;
+    }
+
+    .benefit-tag {
+        padding: 8px 16px;
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        color: #1565c0;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .benefit-tag:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(21, 101, 192, 0.2);
+    }
+
+    .play-button {
+        width: 100%;
+        padding: 16px;
+        background: var(--primary-gradient);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        text-decoration: none;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .play-button:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .play-button i {
+        font-size: 1.1rem;
+    }
+
+    /* Progress Section */
+    .progress-section {
+        background: white;
+        border-radius: 24px;
+        padding: 40px;
+        box-shadow: var(--card-shadow);
+        margin-bottom: 50px;
+    }
+
+    .progress-section h2 {
+        font-size: 2rem;
+        text-align: center;
+        margin-bottom: 35px;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .progress-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 25px;
+    }
+
+    .progress-card {
+        text-align: center;
+        padding: 30px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 16px;
+        transition: all 0.3s ease;
+    }
+
+    .progress-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--card-shadow);
+    }
+
+    .progress-card i {
+        font-size: 3rem;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 15px;
+    }
+
+    .progress-card h4 {
+        color: #2d3748;
+        font-size: 1rem;
+        margin-bottom: 10px;
+    }
+
+    .progress-card p {
+        font-size: 2rem;
+        font-weight: 700;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    /* Benefits Section */
+    .benefits-section {
+        background: white;
+        border-radius: 24px;
+        padding: 40px;
+        box-shadow: var(--card-shadow);
+    }
+
+    .benefits-section h2 {
+        font-size: 2rem;
+        text-align: center;
+        margin-bottom: 15px;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .benefits-subtitle {
+        text-align: center;
+        color: #718096;
+        margin-bottom: 40px;
+        font-size: 1.1rem;
+    }
+
+    .benefits-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 30px;
+    }
+
+    .benefit-item {
+        text-align: center;
+        padding: 30px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 16px;
+        transition: all 0.3s ease;
+    }
+
+    .benefit-item:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--card-shadow);
+    }
+
+    .benefit-item i {
+        font-size: 3.5rem;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 20px;
+    }
+
+    .benefit-item h4 {
+        color: #2d3748;
+        font-size: 1.2rem;
+        margin-bottom: 12px;
+    }
+
+    .benefit-item p {
+        color: #718096;
+        line-height: 1.6;
+    }
+
+    /* Memory Game Modal */
+    .game-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        z-index: 10000;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(10px);
+    }
+
+    .game-modal.active {
+        display: flex;
+    }
+
+    .modal-content {
+        background: white;
+        border-radius: 24px;
+        padding: 40px;
+        max-width: 900px;
+        width: 95%;
+        max-height: 95vh;
+        overflow-y: auto;
+        position: relative;
+        animation: modalSlideIn 0.4s ease;
+    }
+
+    @keyframes modalSlideIn {
+        from {
+            opacity: 0;
+            transform: scale(0.8) translateY(50px);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+
+    .close-button {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 50px;
+        height: 50px;
+        border: none;
+        background: var(--danger-gradient);
+        color: white;
+        border-radius: 50%;
+        font-size: 1.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .close-button:hover {
+        transform: rotate(90deg) scale(1.1);
+        box-shadow: 0 5px 20px rgba(255, 107, 107, 0.4);
+    }
+
+    .modal-title {
+        text-align: center;
+        font-size: 2rem;
+        margin-bottom: 30px;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .game-stats-bar {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .stat-box {
+        text-align: center;
+        padding: 20px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 16px;
+    }
+
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .stat-label {
+        color: #718096;
+        font-size: 0.9rem;
+        margin-top: 8px;
+    }
+
+    .memory-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 15px;
+        margin-bottom: 30px;
+    }
+
+    .memory-card {
+        aspect-ratio: 1;
+        background: var(--primary-gradient);
+        border-radius: 16px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        color: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .memory-card:hover {
+        transform: scale(1.05);
+    }
+
+    .memory-card.flipped {
+        background: white;
+        border: 3px solid #667eea;
+    }
+
+    .memory-card.matched {
+        background: var(--success-gradient);
+        border: none;
+        cursor: default;
+    }
+
+    .reset-button {
+        width: 100%;
+        padding: 16px;
+        background: var(--success-gradient);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .reset-button:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 20px rgba(81, 207, 102, 0.4);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .hero-section h1 {
+            font-size: 2rem;
+        }
+
+        .hero-section p {
+            font-size: 1rem;
+        }
+
+        .games-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .memory-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .game-icon {
+            font-size: 4rem;
+        }
+
+        .progress-cards,
+        .benefits-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .game-stats-bar {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="games-container">
+    <a href="{{ url_for('dashboard') }}" class="back-button">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+
+    <div class="hero-section">
+        <h1>🎮 Brain Games & Activities</h1>
+        <p>Challenge your mind with scientifically-designed cognitive wellness games</p>
+    </div>
+
+    <div class="games-grid">
+        {% for game in games %}
+        <div class="game-card">
+            <div class="game-icon-wrapper">
+                <div class="game-icon">{{ game.icon }}</div>
+            </div>
+            <div class="game-content">
+                <h3 class="game-title">{{ game.title }}</h3>
+                <p class="game-description">{{ game.description }}</p>
+                
+                <div class="game-meta">
+                    <span class="meta-badge">
+                        <i class="fas fa-clock"></i> {{ game.duration }}
+                    </span>
+                    <span class="meta-badge difficulty-{{ game.difficulty.lower() }}">
+                        {{ game.difficulty }}
+                    </span>
+                </div>
+                
+                <div class="benefits-tags">
+                    {% for benefit in game.benefits %}
+                    <span class="benefit-tag">{{ benefit }}</span>
+                    {% endfor %}
+                </div>
+                
+                {% if game.url %}
+                <a href="{{ game.url }}" target="_blank" class="play-button">
+                    <i class="fas fa-play"></i> Play Now
+                </a>
+                {% else %}
+                <button class="play-button" onclick="openMemoryGame()">
+                    <i class="fas fa-play"></i> Play Now
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="progress-section">
+        <h2>🏆 Your Gaming Progress</h2>
+        <div class="progress-cards">
+            <div class="progress-card">
+                <i class="fas fa-fire"></i>
+                <h4>Current Streak</h4>
+                <p>3 days</p>
+            </div>
+            <div class="progress-card">
+                <i class="fas fa-trophy"></i>
+                <h4>Games Completed</h4>
+                <p>12</p>
+            </div>
+            <div class="progress-card">
+                <i class="fas fa-star"></i>
+                <h4>Average Score</h4>
+                <p>85%</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="benefits-section">
+        <h2>💡 Benefits of Brain Games</h2>
+        <p class="benefits-subtitle">Regular cognitive training can significantly improve mental wellness</p>
+        <div class="benefits-grid">
+            <div class="benefit-item">
+                <i class="fas fa-brain"></i>
+                <h4>Improved Memory</h4>
+                <p>Enhance short-term and working memory capacity</p>
+            </div>
+            <div class="benefit-item">
+                <i class="fas fa-bullseye"></i>
+                <h4>Better Focus</h4>
+                <p>Increase attention span and concentration abilities</p>
+            </div>
+            <div class="benefit-item">
+                <i class="fas fa-lightbulb"></i>
+                <h4>Cognitive Flexibility</h4>
+                <p>Improve problem-solving and mental adaptability</p>
+            </div>
+            <div class="benefit-item">
+                <i class="fas fa-bolt"></i>
+                <h4>Faster Processing</h4>
+                <p>Speed up mental processing and reaction time</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Memory Game Modal -->
+<div class="game-modal" id="memoryModal">
+    <div class="modal-content">
+        <button class="close-button" onclick="closeMemoryGame()">×</button>
+        <h2 class="modal-title">🧠 Memory Match Challenge</h2>
+        
+        <div class="game-stats-bar">
+            <div class="stat-box">
+                <div class="stat-value" id="moves">0</div>
+                <div class="stat-label">Moves</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="matches">0</div>
+                <div class="stat-label">Matches</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="timer">0:00</div>
+                <div class="stat-label">Time</div>
+            </div>
+        </div>
+        
+        <div class="memory-grid" id="memoryGrid"></div>
+        
+        <button class="reset-button" onclick="resetGame()">
+            <i class="fas fa-redo"></i> New Game
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Memory Game Logic
+const emojis = ['🌟', '🎨', '🎵', '🎭', '🎪', '🎯', '🎲', '🎸'];
+let cards = [];
+let flippedCards = [];
+let matchedPairs = 0;
+let moves = 0;
+let gameTimer;
+let seconds = 0;
+
+function openMemoryGame() {
+    document.getElementById('memoryModal').classList.add('active');
+    initGame();
+}
+
+function closeMemoryGame() {
+    document.getElementById('memoryModal').classList.remove('active');
+    clearInterval(gameTimer);
+}
+
+function initGame() {
+    cards = [...emojis, ...emojis]
+        .sort(() => Math.random() - 0.5)
+        .map((emoji, index) => ({ id: index, emoji, flipped: false, matched: false }));
+    
+    flippedCards = [];
+    matchedPairs = 0;
+    moves = 0;
+    seconds = 0;
+    
+    updateStats();
+    renderCards();
+    startTimer();
+}
+
+function startTimer() {
+    clearInterval(gameTimer);
+    gameTimer = setInterval(() => {
+        seconds++;
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        document.getElementById('timer').textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+    }, 1000);
+}
+
+function renderCards() {
+    const grid = document.getElementById('memoryGrid');
+    grid.innerHTML = '';
+    
+    cards.forEach((card, index) => {
+        const cardEl = document.createElement('div');
+        cardEl.className = 'memory-card';
+        cardEl.dataset.index = index;
+        
+        if (card.flipped || card.matched) {
+            cardEl.classList.add('flipped');
+            cardEl.textContent = card.emoji;
+        }
+        
+        if (card.matched) {
+            cardEl.classList.add('matched');
+        }
+        
+        cardEl.onclick = () => flipCard(index);
+        grid.appendChild(cardEl);
+    });
+}
+
+function flipCard(index) {
+    if (flippedCards.length >= 2) return;
+    if (cards[index].flipped || cards[index].matched) return;
+    
+    cards[index].flipped = true;
+    flippedCards.push(index);
+    renderCards();
+    
+    if (flippedCards.length === 2) {
+        moves++;
+        updateStats();
+        checkMatch();
+    }
+}
+
+function checkMatch() {
+    const [index1, index2] = flippedCards;
+    const card1 = cards[index1];
+    const card2 = cards[index2];
+    
+    setTimeout(() => {
+        if (card1.emoji === card2.emoji) {
+            card1.matched = true;
+            card2.matched = true;
+            matchedPairs++;
+            
+            if (matchedPairs === emojis.length) {
+                clearInterval(gameTimer);
+                setTimeout(() => {
+                    alert(`🎉 Congratulations!\n\nYou completed the game in ${moves} moves and ${formatTime(seconds)}!`);
+                }, 500);
+            }
+        } else {
+            card1.flipped = false;
+            card2.flipped = false;
+        }
+        
+        flippedCards = [];
+        updateStats();
+        renderCards();
+    }, 800);
+}
+
+function updateStats() {
+    document.getElementById('moves').textContent = moves;
+    document.getElementById('matches').textContent = matchedPairs;
+}
+
+function formatTime(secs) {
+    const mins = Math.floor(secs / 60);
+    const seconds = secs % 60;
+    return `${mins}:${seconds.toString().padStart(2, '0')}`;
+}
+
+function resetGame() {
+    initGame();
+}
+
+// Close modal on escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeMemoryGame();
+    }
+});
+</script>
+{% endblock %}

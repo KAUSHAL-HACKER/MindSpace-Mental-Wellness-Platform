@@ -1,0 +1,505 @@
+{% extends "base.html" %}
+
+{% block title %}Meditation - MindSpace{% endblock %}
+
+{% block styles %}
+<style>
+    body {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+    }
+
+    .meditation-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+
+    .back-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 24px;
+        background: white;
+        color: #667eea;
+        text-decoration: none;
+        border-radius: 12px;
+        font-weight: 600;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        margin-bottom: 30px;
+    }
+
+    .back-button:hover {
+        transform: translateX(-5px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .page-header {
+        text-align: center;
+        padding: 60px 20px;
+        background: white;
+        border-radius: 24px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        margin-bottom: 50px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 6px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .page-header h1 {
+        font-size: 3rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 15px;
+    }
+
+    .page-header p {
+        font-size: 1.2rem;
+        color: #718096;
+    }
+
+    .exercises-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 30px;
+        margin-bottom: 50px;
+    }
+
+    .exercise-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        transition: all 0.4s ease;
+    }
+
+    .exercise-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .exercise-header {
+        padding: 30px;
+        background: linear-gradient(135deg, #e0e7ff 0%, #fce7f3 100%);
+        text-align: center;
+    }
+
+    .exercise-icon {
+        font-size: 4rem;
+        margin-bottom: 15px;
+    }
+
+    .exercise-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 10px;
+    }
+
+    .exercise-meta {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 15px;
+    }
+
+    .meta-badge {
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .duration-badge {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+        color: #856404;
+    }
+
+    .difficulty-badge {
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        color: #155724;
+    }
+
+    .exercise-content {
+        padding: 30px;
+    }
+
+    .section {
+        margin-bottom: 20px;
+    }
+
+    .section h4 {
+        color: #667eea;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 1rem;
+    }
+
+    .section p {
+        color: #718096;
+        line-height: 1.6;
+        font-size: 0.95rem;
+    }
+
+    .benefits-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .benefits-list li {
+        padding: 8px 0;
+        color: #718096;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .benefits-list li:before {
+        content: "✓";
+        color: #51cf66;
+        font-weight: bold;
+        font-size: 1.2rem;
+    }
+
+    .instructions-list {
+        list-style: none;
+        padding: 0;
+        counter-reset: step-counter;
+    }
+
+    .instructions-list li {
+        padding: 10px 0;
+        color: #718096;
+        display: flex;
+        gap: 15px;
+        counter-increment: step-counter;
+    }
+
+    .instructions-list li:before {
+        content: counter(step-counter);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+    }
+
+    .start-button {
+        width: 100%;
+        padding: 16px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .start-button:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .info-banner {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+    .info-banner i {
+        font-size: 2.5rem;
+        color: #667eea;
+        margin-bottom: 15px;
+    }
+
+    .info-banner p {
+        color: #718096;
+        font-size: 1rem;
+        margin: 0;
+    }
+
+    /* Timer Modal */
+    .timer-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        z-index: 10000;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(10px);
+    }
+
+    .timer-modal.active {
+        display: flex;
+    }
+
+    .timer-content {
+        background: white;
+        border-radius: 24px;
+        padding: 50px;
+        text-align: center;
+        max-width: 500px;
+        width: 90%;
+    }
+
+    .timer-circle {
+        width: 250px;
+        height: 250px;
+        border: 10px solid #667eea;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 30px;
+        background: linear-gradient(135deg, #e0e7ff 0%, #fce7f3 100%);
+    }
+
+    .timer-display {
+        font-size: 3.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .timer-controls {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 30px;
+    }
+
+    .control-button {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .pause-button {
+        background: linear-gradient(135deg, #ffd43b 0%, #ffa94d 100%);
+        color: #2d3748;
+    }
+
+    .stop-button {
+        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+        color: white;
+    }
+
+    .control-button:hover {
+        transform: scale(1.05);
+    }
+
+    @media (max-width: 768px) {
+        .page-header h1 {
+            font-size: 2rem;
+        }
+
+        .exercises-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .timer-circle {
+            width: 200px;
+            height: 200px;
+        }
+
+        .timer-display {
+            font-size: 2.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="meditation-container">
+    <a href="{{ url_for('dashboard') }}" class="back-button">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+
+    <div class="page-header">
+        <h1>🧘‍♀️ Meditation & Mindfulness</h1>
+        <p>Find peace and tranquility through guided meditation practices</p>
+    </div>
+
+    <div class="exercises-grid">
+        {% for exercise in exercises %}
+        <div class="exercise-card">
+            <div class="exercise-header">
+                <div class="exercise-icon">{{ exercise.icon }}</div>
+                <h3 class="exercise-title">{{ exercise.title }}</h3>
+                <div class="exercise-meta">
+                    <span class="meta-badge duration-badge">
+                        <i class="fas fa-clock"></i> {{ exercise.duration }}
+                    </span>
+                    <span class="meta-badge difficulty-badge">
+                        {{ exercise.difficulty }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="exercise-content">
+                <div class="section">
+                    <h4><i class="fas fa-info-circle"></i> About</h4>
+                    <p>{{ exercise.description }}</p>
+                </div>
+
+                <div class="section">
+                    <h4><i class="fas fa-heart"></i> Benefits</h4>
+                    <ul class="benefits-list">
+                        {% for benefit in exercise.benefits %}
+                        <li>{{ benefit }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <div class="section">
+                    <h4><i class="fas fa-list-ol"></i> Instructions</h4>
+                    <ol class="instructions-list">
+                        {% for instruction in exercise.instructions %}
+                        <li>{{ instruction }}</li>
+                        {% endfor %}
+                    </ol>
+                </div>
+
+                <button class="start-button" onclick="startMeditation('{{ exercise.title }}', '{{ exercise.duration }}')">
+                    <i class="fas fa-play"></i> Start Meditation
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="info-banner">
+        <i class="fas fa-lightbulb"></i>
+        <p><strong>💡 Tip:</strong> Practice meditation daily for best results. Even 10 minutes can make a difference!</p>
+    </div>
+</div>
+
+<!-- Timer Modal -->
+<div class="timer-modal" id="timerModal">
+    <div class="timer-content">
+        <h2 id="meditationTitle" style="margin-bottom: 30px; color: #2d3748;">Meditation in Progress</h2>
+        <div class="timer-circle">
+            <div class="timer-display" id="timerDisplay">10:00</div>
+        </div>
+        <div class="timer-controls">
+            <button class="control-button pause-button" id="pauseButton" onclick="togglePause()">
+                <i class="fas fa-pause"></i> Pause
+            </button>
+            <button class="control-button stop-button" onclick="stopMeditation()">
+                <i class="fas fa-stop"></i> Stop
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let timerInterval;
+let isPaused = false;
+let timeLeft = 600; // Default 10 minutes
+
+function startMeditation(title, duration) {
+    document.getElementById('meditationTitle').textContent = title;
+    document.getElementById('timerModal').classList.add('active');
+    
+    // Parse duration (e.g., "10 minutes" -> 600 seconds)
+    const minutes = parseInt(duration);
+    timeLeft = minutes * 60;
+    
+    updateTimerDisplay();
+    startTimer();
+}
+
+function startTimer() {
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        if (!isPaused && timeLeft > 0) {
+            timeLeft--;
+            updateTimerDisplay();
+            
+            if (timeLeft === 0) {
+                completeMeditation();
+            }
+        }
+    }, 1000);
+}
+
+function updateTimerDisplay() {
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    document.getElementById('timerDisplay').textContent = 
+        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+}
+
+function togglePause() {
+    isPaused = !isPaused;
+    const pauseButton = document.getElementById('pauseButton');
+    
+    if (isPaused) {
+        pauseButton.innerHTML = '<i class="fas fa-play"></i> Resume';
+    } else {
+        pauseButton.innerHTML = '<i class="fas fa-pause"></i> Pause';
+    }
+}
+
+function stopMeditation() {
+    clearInterval(timerInterval);
+    document.getElementById('timerModal').classList.remove('active');
+    isPaused = false;
+    timeLeft = 600;
+    document.getElementById('pauseButton').innerHTML = '<i class="fas fa-pause"></i> Pause';
+}
+
+function completeMeditation() {
+    clearInterval(timerInterval);
+    alert('🎉 Meditation Complete!\n\nGreat job! You\'ve completed your meditation session.');
+    stopMeditation();
+}
+
+// Close modal on escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        stopMeditation();
+    }
+});
+</script>
+{% endblock %}

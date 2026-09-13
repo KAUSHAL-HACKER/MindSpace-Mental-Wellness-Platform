@@ -1,0 +1,804 @@
+{% extends "base.html" %}
+
+{% block title %}Music Therapy - MindSpace{% endblock %}
+
+{% block content %}
+<style>
+:root {
+    --primary-color: #667eea;
+    --primary-dark: #764ba2;
+    --secondary-color: #5b9bd5;
+    --accent-color: #ff6b6b;
+    --success-color: #51cf66;
+    --warning-color: #ffd43b;
+    --text-dark: #2c3e50;
+    --text-light: #6c757d;
+    --bg-light: #f8f9fa;
+    --white: #ffffff;
+    --shadow: 0 2px 10px rgba(0,0,0,0.1);
+    --shadow-hover: 0 5px 20px rgba(0,0,0,0.15);
+}
+
+body {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    min-height: 100vh;
+}
+
+.page-container {
+    padding: 20px;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: white;
+    color: var(--primary-color);
+    text-decoration: none;
+    border-radius: 10px;
+    font-weight: 600;
+    margin-bottom: 30px;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow);
+}
+
+.back-btn:hover {
+    transform: translateX(-5px);
+    box-shadow: var(--shadow-hover);
+}
+
+.music-header {
+    text-align: center;
+    padding: 40px 20px;
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    color: white;
+    border-radius: 20px;
+    margin-bottom: 40px;
+    box-shadow: 0 10px 30px rgba(250, 112, 154, 0.3);
+}
+
+.music-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+}
+
+.music-header p {
+    font-size: 1.1rem;
+    opacity: 0.95;
+}
+
+.categories-nav {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 30px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.category-btn {
+    padding: 12px 25px;
+    border: 2px solid #e2e8f0;
+    background: white;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    font-weight: 600;
+}
+
+.category-btn:hover, .category-btn.active {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    color: white;
+    border-color: transparent;
+    transform: translateY(-2px);
+}
+
+.music-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 30px;
+    margin-bottom: 40px;
+}
+
+.music-card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    animation: fadeInUp 0.5s ease;
+}
+
+.music-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+}
+
+.video-container {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    overflow: hidden;
+    background: #000;
+}
+
+.video-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.music-info {
+    padding: 25px;
+}
+
+.music-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: var(--text-dark);
+}
+
+.music-meta {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+    color: var(--text-light);
+    font-size: 0.9rem;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.category-tag {
+    display: inline-block;
+    padding: 6px 15px;
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    color: white;
+    border-radius: 15px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.music-description {
+    color: var(--text-light);
+    line-height: 1.6;
+    margin: 15px 0;
+}
+
+.benefits-section {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.benefits-section h4 {
+    font-size: 1rem;
+    margin-bottom: 10px;
+    color: var(--text-dark);
+}
+
+.benefit-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.benefit-tag {
+    background: #e0e7ff;
+    color: #667eea;
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 0.85rem;
+}
+
+.play-controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.play-btn {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.play-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.playlist-section {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    margin-top: 40px;
+    margin-bottom: 40px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+}
+
+.playlist-section h3 {
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+    color: var(--text-dark);
+}
+
+.playlist-items {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.playlist-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    background: #f7fafc;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.playlist-item:hover {
+    background: #e0e7ff;
+    transform: translateX(5px);
+}
+
+.playlist-icon {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.playlist-info {
+    flex: 1;
+}
+
+.playlist-title {
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 3px;
+}
+
+.playlist-duration {
+    font-size: 0.85rem;
+    color: var(--text-light);
+}
+
+.info-card {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    margin-bottom: 40px;
+}
+
+.info-card h3 {
+    color: var(--primary-color);
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.3rem;
+}
+
+.info-card ul {
+    list-style: none;
+    padding: 0;
+}
+
+.info-card li {
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-light);
+}
+
+.info-card li:before {
+    content: "✓";
+    color: var(--success-color);
+    font-weight: bold;
+    font-size: 1.2em;
+}
+
+.info-card li:last-child {
+    border-bottom: none;
+}
+
+.now-playing {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px 25px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    z-index: 99999;
+    display: none;
+    align-items: center;
+    gap: 15px;
+    max-width: 350px;
+}
+
+.now-playing.active {
+    display: flex;
+    animation: slideUp 0.5s ease;
+}
+
+.now-playing-icon {
+    font-size: 2rem;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Player Modal */
+.player-modal {
+    display: none;
+    position: fixed;
+    z-index: 99999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.85);
+    align-items: center;
+    justify-content: center;
+}
+
+.player-modal-content {
+    background-color: white;
+    padding: 30px;
+    border-radius: 20px;
+    max-width: 900px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    position: relative;
+}
+
+.player-close {
+    position: absolute;
+    right: 20px;
+    top: 15px;
+    font-size: 32px;
+    font-weight: bold;
+    color: #999;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.player-close:hover {
+    color: #333;
+}
+
+.player-header {
+    margin-bottom: 20px;
+}
+
+.player-header h3 {
+    color: var(--primary-color);
+    margin-bottom: 5px;
+}
+
+.player-header p {
+    color: var(--text-light);
+    font-size: 0.9rem;
+}
+
+.youtube-player {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    overflow: hidden;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.youtube-player iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.player-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-outline {
+    background: white;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
+}
+
+.btn-outline:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+    color: white;
+}
+
+.btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+}
+
+@media (max-width: 768px) {
+    .music-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .categories-nav {
+        flex-wrap: wrap;
+        justify-content: flex-start;
+    }
+    
+    .now-playing {
+        bottom: 10px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
+    }
+    
+    .player-modal-content {
+        width: 95%;
+        padding: 20px;
+    }
+    
+    .music-header h1 {
+        font-size: 2rem;
+    }
+}
+</style>
+
+<div class="page-container">
+    <div class="container">
+        <a href="{{ url_for('dashboard') }}" class="back-btn">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+        
+        <div class="music-header">
+            <h1>🎵 Music Therapy</h1>
+            <p>Healing sounds for your mind and soul</p>
+        </div>
+
+        <div class="categories-nav">
+            <button type="button" class="category-btn active" data-category="all">All Music</button>
+            <button type="button" class="category-btn" data-category="relaxation">Relaxation</button>
+            <button type="button" class="category-btn" data-category="nature">Nature Sounds</button>
+            <button type="button" class="category-btn" data-category="focus">Focus</button>
+            <button type="button" class="category-btn" data-category="sleep">Sleep</button>
+        </div>
+
+        <div class="music-grid">
+            {% for track in music_tracks %}
+            <div class="music-card" data-category="{{ track.category.lower() }}">
+                <div class="video-container">
+                    <iframe 
+                        src="https://www.youtube.com/embed/{{ track.youtube_id }}?enablejsapi=1" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen>
+                    </iframe>
+                </div>
+                <div class="music-info">
+                    <h3 class="music-title">{{ track.title }}</h3>
+                    <div class="music-meta">
+                        <div class="meta-item">
+                            <i class="fas fa-clock"></i>
+                            <span>{{ track.duration }}</span>
+                        </div>
+                        <span class="category-tag">{{ track.category }}</span>
+                    </div>
+                    <p class="music-description">{{ track.description }}</p>
+                    
+                    <div class="benefits-section">
+                        <h4><i class="fas fa-heart"></i> Benefits</h4>
+                        <div class="benefit-tags">
+                            {% for benefit in track.benefits %}
+                            <span class="benefit-tag">{{ benefit }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="play-controls">
+                        <button type="button" class="play-btn" data-title="{{ track.title }}" data-youtube="{{ track.youtube_id }}">
+                            <i class="fas fa-play"></i> Play
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="playlist-section">
+            <h3><i class="fas fa-list"></i> Curated Playlists</h3>
+            <div class="playlist-items">
+                <div class="playlist-item">
+                    <div class="playlist-icon">🌙</div>
+                    <div class="playlist-info">
+                        <div class="playlist-title">Deep Sleep Collection</div>
+                        <div class="playlist-duration">2 hours • 12 tracks</div>
+                    </div>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+                <div class="playlist-item">
+                    <div class="playlist-icon">🌊</div>
+                    <div class="playlist-info">
+                        <div class="playlist-title">Ocean Waves & Serenity</div>
+                        <div class="playlist-duration">90 minutes • 8 tracks</div>
+                    </div>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+                <div class="playlist-item">
+                    <div class="playlist-icon">🎹</div>
+                    <div class="playlist-info">
+                        <div class="playlist-title">Piano for Meditation</div>
+                        <div class="playlist-duration">1 hour • 10 tracks</div>
+                    </div>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+                <div class="playlist-item">
+                    <div class="playlist-icon">🌳</div>
+                    <div class="playlist-info">
+                        <div class="playlist-title">Forest Ambience</div>
+                        <div class="playlist-duration">75 minutes • 6 tracks</div>
+                    </div>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <h3><i class="fas fa-volume-up"></i> Listening Tips</h3>
+            <ul>
+                <li>Find a quiet, comfortable space</li>
+                <li>Use headphones for better immersion</li>
+                <li>Focus on your breathing while listening</li>
+                <li>Practice for at least 10-15 minutes daily</li>
+                <li>Create a regular listening routine</li>
+                <li>Adjust volume to a comfortable level</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Now Playing Indicator -->
+<div class="now-playing" id="nowPlaying">
+    <div class="now-playing-icon">🎵</div>
+    <div>
+        <div style="font-weight: 600; margin-bottom: 3px;">Now Playing</div>
+        <div id="trackTitle" style="font-size: 0.9rem; opacity: 0.9;">Track Name</div>
+    </div>
+</div>
+
+<!-- Player Modal -->
+<div class="player-modal" id="playerModal">
+    <div class="player-modal-content">
+        <span class="player-close" id="playerClose">&times;</span>
+        <div class="player-header">
+            <h3 id="playerTitle">Track Title</h3>
+            <p>Enjoy your relaxing music session</p>
+        </div>
+        <div class="youtube-player">
+            <iframe id="youtubePlayer" allowfullscreen></iframe>
+        </div>
+        <div class="player-actions">
+            <button type="button" class="btn btn-danger" id="closePlayerBtn">
+                <i class="fas fa-times"></i> Close Player
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function() {
+    'use strict';
+    
+    // Filter functionality
+    const categoryButtons = document.querySelectorAll('.category-btn');
+    const musicCards = document.querySelectorAll('.music-card');
+    
+    categoryButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            categoryButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            
+            const category = this.getAttribute('data-category');
+            
+            musicCards.forEach(card => {
+                const cardCategory = card.getAttribute('data-category');
+                
+                if (category === 'all') {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = cardCategory === category ? 'block' : 'none';
+                }
+            });
+        });
+    });
+    
+    // Play button functionality
+    const playButtons = document.querySelectorAll('.play-btn');
+    const playerModal = document.getElementById('playerModal');
+    const youtubePlayer = document.getElementById('youtubePlayer');
+    const playerTitle = document.getElementById('playerTitle');
+    const nowPlaying = document.getElementById('nowPlaying');
+    const trackTitle = document.getElementById('trackTitle');
+    
+    playButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const title = this.getAttribute('data-title');
+            const youtubeId = this.getAttribute('data-youtube');
+            
+            // Set title
+            playerTitle.textContent = title;
+            trackTitle.textContent = title;
+            
+            // Set YouTube video
+            youtubePlayer.src = `https://www.youtube.com/embed/${youtubeId}?autoplay=1`;
+            
+            // Show player modal
+            playerModal.style.display = 'flex';
+            
+            // Show now playing indicator
+            nowPlaying.classList.add('active');
+            
+            // Auto-hide now playing after 5 seconds
+            setTimeout(() => {
+                nowPlaying.classList.remove('active');
+            }, 5000);
+        });
+    });
+    
+    // Close player functionality
+    function closePlayer() {
+        playerModal.style.display = 'none';
+        youtubePlayer.src = '';
+        nowPlaying.classList.remove('active');
+    }
+    
+    const playerClose = document.getElementById('playerClose');
+    const closePlayerBtn = document.getElementById('closePlayerBtn');
+    
+    if (playerClose) {
+        playerClose.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            closePlayer();
+        });
+    }
+    
+    if (closePlayerBtn) {
+        closePlayerBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            closePlayer();
+        });
+    }
+    
+    // Close player when clicking outside
+    if (playerModal) {
+        playerModal.addEventListener('click', function(e) {
+            if (e.target === playerModal) {
+                closePlayer();
+            }
+        });
+    }
+    
+    // Playlist items click handler
+    const playlistItems = document.querySelectorAll('.playlist-item');
+    
+    playlistItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            alert('Full playlist feature coming soon!');
+        });
+    });
+    
+    // Prevent modal content clicks from closing modal
+    const playerModalContent = document.querySelector('.player-modal-content');
+    if (playerModalContent) {
+        playerModalContent.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    }
+})();
+</script>
+{% endblock %}
