@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, session, render_template, redirect, url_for
-import psycopg2
-from psycopg2.extras import RealDictCursor
+import re
+from urllib.parse import unquote, urlparse
+import pg8000.native
 from flask_bcrypt import Bcrypt
 import google.generativeai as genai
 import os
@@ -16,8 +17,84 @@ app.secret_key = os.getenv('SECRET_KEY', 'mindspace_secret_key_2024')
 bcrypt = Bcrypt(app)
 
 # Database connection
+class _NativeCursor:
+    def __init__(self, connection):
+        self.connection = connection
+        self.rows = []
+        self.position = 0
+
+    def execute(self, query, parameters=()):
+        parameter_names = [f"param_{index}" for index in range(len(parameters))]
+        parameter_values = dict(zip(parameter_names, parameters))
+        parameter_index = 0
+
+        def replace_parameter(_match):
+            nonlocal parameter_index
+            name = parameter_names[parameter_index]
+            parameter_index += 1
+            return f":{name}"
+
+        native_query = re.sub(r"%s", replace_parameter, query)
+        self.rows = self.connection.run(native_query, **parameter_values)
+        self.position = 0
+        column_names = [column["name"] for column in (self.connection.columns or [])]
+        self.rows = [dict(zip(column_names, row)) for row in self.rows]
+        return self
+
+    def fetchone(self):
+        if self.position >= len(self.rows):
+            return None
+        row = self.rows[self.position]
+        self.position += 1
+        return row
+
+    def fetchall(self):
+        rows = self.rows[self.position:]
+        self.position = len(self.rows)
+        return rows
+
+    def close(self):
+        pass
+
+
+class _NativeConnection:
+    def __init__(self, connection):
+        self.connection = connection
+
+    def cursor(self, **_kwargs):
+        return _NativeCursor(self.connection)
+
+    def commit(self):
+        self.connection.run("COMMIT")
+
+    def rollback(self):
+        self.connection.run("ROLLBACK")
+
+    def close(self):
+        self.connection.close()
+
+
 def get_db_connection():
-    return psycopg2.connect(os.getenv('DATABASE_URL'))
+    database_url = os.getenv('DATABASE_URL')
+    if not database_url:
+        raise RuntimeError("DATABASE_URL is not configured")
+
+    parsed_url = urlparse(database_url)
+    if parsed_url.scheme not in ('postgresql', 'postgres'):
+        raise ValueError("DATABASE_URL must use the postgresql:// scheme")
+
+    database = parsed_url.path.lstrip('/')
+    if not parsed_url.username or not database:
+        raise ValueError("DATABASE_URL must include a username and database name")
+
+    connection = pg8000.native.Connection(
+        user=unquote(parsed_url.username),
+        password=unquote(parsed_url.password or ''),
+        host=parsed_url.hostname or 'localhost',
+        port=parsed_url.port or 5432,
+        database=unquote(database),
+    )
+    return _NativeConnection(connection)
 
 # Local AI Response Function - IMPROVED VERSION
 def local_ai_response(message):
@@ -572,7 +649,7 @@ def log_activity(user_id, activity_type, title, description):
 
 def get_user_message_count(user_id):
     conn = get_db_connection()
-    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur = conn.cursor()
     today = datetime.now().date()
     
     try:
@@ -642,7 +719,7 @@ def signup():
 
     hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
 
-    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur = conn.cursor()
     try:
         cur.execute(
             "INSERT INTO nexas_users (full_name, email, password) VALUES (%s, %s, %s) RETURNING *",
@@ -672,7 +749,7 @@ def login():
     email = data.get('email')
     password = data.get('password')
 
-    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur = conn.cursor()
     cur.execute("SELECT * FROM nexas_users WHERE email = %s", (email,))
     user = cur.fetchone()
     cur.close()
@@ -733,7 +810,7 @@ def get_recent_activity():
         return jsonify({'error': 'Not authenticated'}), 401
     
     conn = get_db_connection()
-    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur = conn.cursor()
     try:
         cur.execute("""
             SELECT activity_type as type, activity_title as title, 
@@ -864,7 +941,7 @@ def community():
         return redirect(url_for('home'))
     
     conn = get_db_connection()
-    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur = conn.cursor()
     try:
         cur.execute("""
             SELECT id, author_name, content, created_at, likes_count 
